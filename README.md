@@ -2,18 +2,14 @@
 
 A browser-based interface for running a holiday gift exchange game.
 
-## Run locally
+## Run it
 
-```bash
-python3 -m http.server 8000
-```
-
-Then open http://localhost:8000.
+Double-click `index.html` (or drag it into a browser). No server, no install, no internet connection needed.
 
 ## Layout
 
 - `index.html` — app shell
 - `css/` — styles
-- `js/` — app logic (ES modules)
+- `js/` — app logic (plain scripts)
 - `assets/` — images, sounds, fonts
 - `docs/` — specs and notes
