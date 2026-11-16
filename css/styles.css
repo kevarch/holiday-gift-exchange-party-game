@@ -1,0 +1,12 @@
+:root {
+  --bg: #fdfaf5;
+  --fg: #1f2a24;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+#app { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
