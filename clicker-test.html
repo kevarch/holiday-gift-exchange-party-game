@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clicker Test</title>
+<style>
+  :root {
+    --bg: #0f1d17;
+    --panel: #18291f;
+    --border: #2c4436;
+    --fg: #f3efe6;
+    --muted: #9fb3a6;
+    --green: #3fbf7f;
+    --red: #e0524d;
+    --gold: #f2c14e;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  h1 { margin: 0; font-size: 28px; }
+  .sub { color: var(--muted); margin: 6px 0 0; }
+  .focus {
+    padding: 8px 14px; border-radius: 999px; font-weight: 600; font-size: 14px;
+    border: 1px solid var(--border);
+  }
+  .focus.on { background: rgba(63,191,127,.15); color: var(--green); border-color: var(--green); }
+  .focus.off { background: rgba(224,82,77,.15); color: var(--red); border-color: var(--red); }
+
+  .buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+  .btn {
+    background: var(--panel); border: 2px solid var(--border); border-radius: 16px;
+    padding: 24px 16px; text-align: center; transition: background .12s, border-color .12s, transform .12s;
+  }
+  .btn .icon { font-size: 56px; line-height: 1; }
+  .btn .name { font-size: 22px; font-weight: 700; margin-top: 10px; }
+  .btn .keys { color: var(--muted); font-size: 13px; margin-top: 6px; min-height: 2.6em; }
+  .btn .count { font-size: 15px; margin-top: 10px; }
+  .btn .status { margin-top: 10px; font-weight: 700; color: var(--muted); }
+  .btn.ok .status { color: var(--green); }
+  .btn.down { background: rgba(242,193,78,.18); border-color: var(--gold); transform: scale(1.03); }
+
+  .checklist { margin-top: 24px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; }
+  .checklist h2, .log h2 { margin: 0 0 10px; font-size: 18px; }
+  .checklist ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .checklist li::before { content: "⬜ "; }
+  .checklist li.done::before { content: "✅ "; }
+  .checklist li.done { color: var(--green); }
+
+  .log { margin-top: 24px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; }
+  .log-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  button.reset {
+    background: transparent; color: var(--fg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer;
+  }
+  button.reset:hover { border-color: var(--muted); }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; }
+  td.mapped-next { color: var(--green); font-weight: 600; }
+  td.mapped-back { color: var(--gold); font-weight: 600; }
+  td.mapped-other { color: #7fb4ff; font-weight: 600; }
+  .empty { color: var(--muted); padding: 12px 0; }
+  .tips { color: var(--muted); font-size: 14px; margin-top: 20px; line-height: 1.5; }
+
+  @media (max-width: 700px) {
+    .buttons { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Clicker Test</h1>
+      <p class="sub">Press each button on the Logitech R500s. Each one should light up below.</p>
+    </div>
+    <div id="focus" class="focus on">● Listening</div>
+  </header>
+
+  <section class="buttons">
+    <div class="btn" id="btn-back">
+      <div class="icon">◀</div>
+      <div class="name">Back</div>
+      <div class="keys">Page Up · ← · ↑</div>
+      <div class="count">Presses: <span>0</span></div>
+      <div class="status">Not detected yet</div>
+    </div>
+    <div class="btn" id="btn-next">
+      <div class="icon">▶</div>
+      <div class="name">Next</div>
+      <div class="keys">Page Down · → · ↓ · Space · Enter</div>
+      <div class="count">Presses: <span>0</span></div>
+      <div class="status">Not detected yet</div>
+    </div>
+    <div class="btn" id="btn-other">
+      <div class="icon">✱</div>
+      <div class="name">Other key</div>
+      <div class="keys">F5 · Esc · B · period, or anything else</div>
+      <div class="count">Presses: <span>0</span></div>
+      <div class="status">Not detected yet</div>
+    </div>
+  </section>
+
+  <section class="checklist">
+    <h2>Checklist</h2>
+    <ul>
+      <li id="chk-next">Next button detected</li>
+      <li id="chk-back">Back button detected</li>
+      <li id="chk-hold">Held a button down for over 1 second (checks long-press behavior)</li>
+    </ul>
+  </section>
+
+  <section class="log">
+    <div class="log-head">
+      <h2>Input log</h2>
+      <button class="reset" id="reset" type="button">Reset</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Mapped to</th><th>key</th><th>code</th><th>keyCode</th><th>Held</th><th>Repeats</th></tr>
+        </thead>
+        <tbody id="log-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="log-empty">No input yet. Press a button on the clicker.</div>
+  </section>
+
+  <p class="tips">
+    If nothing shows up: click anywhere on this page so the browser window has focus, make sure the USB receiver is plugged in,
+    and check that the clicker isn't paired to another device over Bluetooth. The laser pointer button doesn't send anything to the computer,
+    so it won't appear here.
+  </p>
+</main>
+
+<script>
+(function () {
+  var NEXT_KEYS = ['PageDown', 'ArrowRight', 'ArrowDown', ' ', 'Enter'];
+  var BACK_KEYS = ['PageUp', 'ArrowLeft', 'ArrowUp', 'Backspace'];
+
+  var cards = {
+    next: document.getElementById('btn-next'),
+    back: document.getElementById('btn-back'),
+    other: document.getElementById('btn-other')
+  };
+  var counts = { next: 0, back: 0, other: 0 };
+  var logBody = document.getElementById('log-body');
+  var logEmpty = document.getElementById('log-empty');
+  var focusEl = document.getElementById('focus');
+
+  // Track keys currently held: code -> { start, repeats, row }
+  var held = {};
+
+  function classify(key) {
+    if (NEXT_KEYS.indexOf(key) !== -1) return 'next';
+    if (BACK_KEYS.indexOf(key) !== -1) return 'back';
+    return 'other';
+  }
+
+  function label(kind) {
+    return kind === 'next' ? 'Next' : kind === 'back' ? 'Back' : 'Other';
+  }
+
+  function displayKey(key) {
+    return key === ' ' ? 'Space' : key;
+  }
+
+  function timeStr(d) {
+    return d.toLocaleTimeString([], { hour12: false }) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+  }
+
+  function cell(text, cls) {
+    var td = document.createElement('td');
+    td.textContent = text;
+    if (cls) td.className = cls;
+    return td;
+  }
+
+  function markChecklist(id) {
+    document.getElementById(id).classList.add('done');
+  }
+
+  document.addEventListener('keydown', function (e) {
+    // Stop the browser from scrolling or navigating on these keys.
+    e.preventDefault();
+
+    var id = e.code || e.key;
+    if (held[id]) {
+      held[id].repeats++;
+      held[id].row.children[6].textContent = held[id].repeats;
+      return;
+    }
+
+    var kind = classify(e.key);
+    counts[kind]++;
+    var card = cards[kind];
+    card.classList.add('down', 'ok');
+    card.querySelector('.count span').textContent = counts[kind];
+    card.querySelector('.status').textContent = '✓ Working · last key: ' + displayKey(e.key);
+    if (kind === 'next') markChecklist('chk-next');
+    if (kind === 'back') markChecklist('chk-back');
+
+    var row = document.createElement('tr');
+    row.appendChild(cell(timeStr(new Date())));
+    row.appendChild(cell(label(kind), 'mapped-' + kind));
+    row.appendChild(cell(displayKey(e.key)));
+    row.appendChild(cell(e.code || '—'));
+    row.appendChild(cell(String(e.keyCode)));
+    row.appendChild(cell('…'));
+    row.appendChild(cell('0'));
+    logBody.insertBefore(row, logBody.firstChild);
+    logEmpty.style.display = 'none';
+    while (logBody.children.length > 50) logBody.removeChild(logBody.lastChild);
+
+    held[id] = { start: performance.now(), repeats: 0, row: row, kind: kind };
+  });
+
+  document.addEventListener('keyup', function (e) {
+    e.preventDefault();
+    var id = e.code || e.key;
+    var h = held[id];
+    if (!h) return;
+    var ms = Math.round(performance.now() - h.start);
+    h.row.children[5].textContent = ms + ' ms';
+    if (ms >= 1000) markChecklist('chk-hold');
+    delete held[id];
+    var stillDown = Object.keys(held).some(function (k) { return held[k].kind === h.kind; });
+    if (!stillDown) cards[h.kind].classList.remove('down');
+  });
+
+  function setFocus(on) {
+    focusEl.className = 'focus ' + (on ? 'on' : 'off');
+    focusEl.textContent = on ? '● Listening' : '● Click this page to listen';
+  }
+  window.addEventListener('focus', function () { setFocus(true); });
+  window.addEventListener('blur', function () {
+    setFocus(false);
+    held = {};
+    Object.keys(cards).forEach(function (k) { cards[k].classList.remove('down'); });
+  });
+  setFocus(document.hasFocus());
+
+  document.getElementById('reset').addEventListener('click', function (e) {
+    e.currentTarget.blur();
+    counts = { next: 0, back: 0, other: 0 };
+    held = {};
+    logBody.innerHTML = '';
+    logEmpty.style.display = '';
+    Object.keys(cards).forEach(function (k) {
+      cards[k].classList.remove('down', 'ok');
+      cards[k].querySelector('.count span').textContent = '0';
+      cards[k].querySelector('.status').textContent = 'Not detected yet';
+    });
+    document.querySelectorAll('.checklist li').forEach(function (li) { li.classList.remove('done'); });
+  });
+})();
+</script>
+</body>
+</html>
