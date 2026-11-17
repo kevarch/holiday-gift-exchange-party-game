@@ -318,6 +318,114 @@
     });
   }
 
+  // ---------- game-over jingle ----------
+  // A bouncy bell tune over sleigh bells and an oom-pah bass (C – F – G7 – C), landing
+  // on a big ringing chord. finale(ctx, out) schedules everything from ctx.currentTime,
+  // so it can also be rendered offline.
+  function hz(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+  // Struck-instrument envelope: near-instant attack, then an exponential fade to silence.
+  function strike(param, t0, vol, len) {
+    param.setValueAtTime(0.0001, t0);
+    param.exponentialRampToValueAtTime(vol, t0 + 0.004);
+    param.exponentialRampToValueAtTime(0.0001, t0 + len);
+  }
+
+  function voice(a, out, type, freq, t0, len, vol) {
+    var o = a.createOscillator();
+    var g = a.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    strike(g.gain, t0, vol, len);
+    o.connect(g).connect(out);
+    o.start(t0);
+    o.stop(t0 + len + 0.05);
+  }
+
+  // Glockenspiel-like bell: FM gives a bright metallic strike that mellows as it rings.
+  function bell(a, out, freq, t0, len, vol) {
+    var car = a.createOscillator();
+    var mod = a.createOscillator();
+    var depth = a.createGain();
+    var amp = a.createGain();
+    car.frequency.value = freq;
+    mod.frequency.value = freq * 3.5;
+    depth.gain.setValueAtTime(freq * 2.5, t0);
+    depth.gain.exponentialRampToValueAtTime(freq * 0.1, t0 + 0.3);
+    strike(amp.gain, t0, vol, len);
+    mod.connect(depth).connect(car.frequency);
+    car.connect(amp).connect(out);
+    mod.start(t0);
+    car.start(t0);
+    mod.stop(t0 + len + 0.05);
+    car.stop(t0 + len + 0.05);
+  }
+
+  // One shake of sleigh bells: a burst of high hiss plus a few tiny, quick bells.
+  var noiseBuf = null;
+  function jingle(a, out, t0, vol) {
+    if (!noiseBuf || noiseBuf.sampleRate !== a.sampleRate) {
+      noiseBuf = a.createBuffer(1, a.sampleRate, a.sampleRate); // 1 second
+      var d = noiseBuf.getChannelData(0);
+      for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    var hiss = a.createBufferSource();
+    var hp = a.createBiquadFilter();
+    var g = a.createGain();
+    hiss.buffer = noiseBuf;
+    hp.type = 'highpass';
+    hp.frequency.value = 7000;
+    strike(g.gain, t0, vol, 0.12);
+    hiss.connect(hp).connect(g).connect(out);
+    hiss.start(t0, Math.random() * 0.8); // a different stretch of noise each shake
+    hiss.stop(t0 + 0.15);
+    for (var j = 0; j < 4; j++) {
+      voice(a, out, 'sine', 3000 + Math.random() * 4000, t0 + Math.random() * 0.025, 0.09, vol * 0.25);
+    }
+  }
+
+  var FINALE_STEP = 0.15; // seconds per eighth note
+  // Melody: [eighth note it starts on, MIDI note, length in eighths]
+  var FINALE_TUNE = [
+    [0, 79, 1], [1, 76, 1], [2, 79, 1], [3, 84, 1],   // G E G C
+    [4, 88, 2], [6, 86, 1], [7, 84, 1],               // E– D C
+    [8, 81, 1], [9, 84, 1], [10, 89, 1], [11, 88, 1], // A C F E
+    [12, 89, 2], [14, 86, 1], [15, 83, 1],            // F– D B
+    [16, 84, 18]                                      // C, left to ring
+  ];
+  // One per bar: [bass note on the downbeat, short chord on the second beat]
+  var FINALE_BARS = [
+    [48, [64, 67, 72]], // C
+    [43, [64, 67, 72]], // C over G
+    [41, [65, 69, 72]], // F
+    [43, [65, 67, 71]]  // G7
+  ];
+
+  function finale(a, out) {
+    var s = FINALE_STEP;
+    var t = a.currentTime + 0.05;
+    var land = t + 16 * s; // where the final chord lands
+    FINALE_TUNE.forEach(function (n) {
+      bell(a, out, hz(n[1]), t + n[0] * s, n[2] * s + 0.3, 0.2);
+    });
+    FINALE_BARS.forEach(function (bar, i) {
+      var b = t + i * 4 * s;
+      voice(a, out, 'triangle', hz(bar[0]), b, 0.25, 0.22);
+      bar[1].forEach(function (m) { voice(a, out, 'triangle', hz(m), b + 2 * s, 0.14, 0.05); });
+    });
+    for (var i = 0; i < 16; i++) jingle(a, out, t + i * s, i % 2 ? 0.075 : 0.135); // accent the beats
+    // The landing: a ringing C chord with a twinkle on top and a fading sleigh-bell shake.
+    [72, 76, 79].forEach(function (m) { bell(a, out, hz(m), land, 3, 0.09); });
+    [48, 36].forEach(function (m) { voice(a, out, 'triangle', hz(m), land, 1.5, 0.2); });
+    [88, 91, 96].forEach(function (m, k) { bell(a, out, hz(m), land + (k + 1) * s / 2, 1, 0.07); });
+    for (var k = 0; k < 10; k++) jingle(a, out, land + k * 0.04, 0.18 * Math.pow(0.75, k));
+  }
+
+  function playFinale() {
+    var a = audioCtx();
+    if (a) finale(a, a.destination);
+  }
+
   function setMuted(m) {
     muted = m;
     store(STORAGE_MUTED, m ? '1' : null);
@@ -604,7 +712,12 @@
     var left = timeLeft();
     if (left <= 0) { endGame(false); return; }
     var secs = Math.ceil(left / 1000);
-    if (secs <= 5 && secs !== lastBeep) { lastBeep = secs; tone(880, 0, 0.12, 'sine', 0.12); }
+    if (secs <= 10 && secs !== lastBeep) {
+      lastBeep = secs;
+      // A beep each second for the last 10; the final 3 are higher and a touch longer.
+      if (secs <= 3) tone(1174.66, 0, 0.18, 'sine', 0.14);
+      else tone(880, 0, 0.12, 'sine', 0.12);
+    }
     renderTimer();
   }
 
@@ -653,9 +766,7 @@
       draw();
       showGameOver();
     } // else the spin finishes, then shows the game-over card
-    [1046.5, 783.99, 659.25, 523.25].forEach(function (f, i) {
-      tone(f, i * 0.22, 0.9, 'triangle', 0.2);
-    });
+    playFinale();
   }
 
   function showGameOver() {

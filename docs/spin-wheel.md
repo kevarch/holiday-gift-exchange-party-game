@@ -62,8 +62,8 @@ A countdown sits in a box in the upper-left corner, big enough to read across th
 - **Set minutes:** click the time (or ✎). Whole minutes, 1–600; default 30. Saving resets the clock to the new time.
 - **Start / pause:** `T` or the ▶/⏸ button. While paused the time dims and reads "Paused".
 - **Reset:** `R` or ↺. Puts the clock back to the full time. If the game is under way it asks first, so a stray key press can't wipe it.
-- The last minute turns red; the last 10 seconds pulse, with a beep for each of the final 5.
+- The last minute turns red; the last 10 seconds pulse, with a beep each second (the final 3 are higher).
 - The clock (minutes, time left, and whether it's running) is saved in `localStorage`, so a reload picks up where it was. It keeps counting while the page is closed.
 - In clean display (`H`, or fullscreen) the time stays visible; only the buttons hide. Use the keys.
 
-**When time runs out, the game is over:** a chime plays and a "Time's up! Game Over" card says all gifts are frozen. The wheel turns icy and won't spin; pressing Next just brings the card back. If a spin is in progress at zero, it finishes but doesn't count. Press `R` (or ↺, or set new minutes) to unfreeze and start a new game.
+**When time runs out, the game is over:** a holiday jingle plays (bells, sleigh bells, and a big final chord) and a "Time's up! Game Over" card says all gifts are frozen. The wheel turns icy and won't spin; pressing Next just brings the card back. If a spin is in progress at zero, it finishes but doesn't count. Press `R` (or ↺, or set new minutes) to unfreeze and start a new game.

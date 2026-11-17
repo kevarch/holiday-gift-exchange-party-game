@@ -10,7 +10,7 @@ It runs entirely in your web browser from a single folder: no install, no accoun
 
 - **Big, readable wheel** designed for a shared screen across the room
 - **Presentation clicker support**: spin with the Next button, dismiss with Back
-- **Game timer** with a red final minute, a countdown beep, and a "Game Over" freeze at zero
+- **Game timer** with a red final minute, a 10-second countdown beep, a holiday jingle at the end, and a "Game Over" freeze at zero
 - **Editable actions**: change the wheel slices right in the app, no coding needed
 - **Clean display mode** that hides every control except the wheel and the clock
 - **Sound and confetti** (sound is generated in the browser; confetti respects your system's reduced-motion setting)
