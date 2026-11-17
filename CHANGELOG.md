@@ -2,6 +2,10 @@
 
 All notable changes to the Holiday Gift Exchange. Versions follow [Semantic Versioning](https://semver.org): **patch** for fixes and wording tweaks, **minor** for new features, **major** for big changes. The current version is set in `js/version.js` and shows in the lower-left corner of the game while the controls are visible.
 
+## 2.1.0 (2026-11-17)
+
+- The version number in the lower-left corner now has a GitHub icon and links to the project on GitHub (opens in a new tab)
+
 ## 2.0.0 (2026-11-17)
 
 A full holiday makeover.

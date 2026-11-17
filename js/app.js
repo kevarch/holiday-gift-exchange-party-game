@@ -18,7 +18,10 @@
     [].forEach.call(document.querySelectorAll('[data-html]'), function (el) { el.innerHTML = t(el.dataset.html); });
     [].forEach.call(document.querySelectorAll('[data-title]'), function (el) { el.title = t(el.dataset.title); });
     [].forEach.call(document.querySelectorAll('[data-aria-label]'), function (el) { el.setAttribute('aria-label', t(el.dataset.ariaLabel)); });
-    if (window.APP_VERSION) document.getElementById('version').textContent = t('versionLabel', { version: window.APP_VERSION });
+    if (window.APP_VERSION) {
+      document.getElementById('version-label').textContent = t('versionLabel', { version: window.APP_VERSION });
+      document.getElementById('version').hidden = false;
+    }
   }
   applyText();
 
@@ -947,6 +950,8 @@
   }
   function toggleClean() { setClean(!document.body.classList.contains('clean')); }
   document.getElementById('ui-toggle').addEventListener('click', function (e) { e.currentTarget.blur(); toggleClean(); });
+  // The version links to the repo in a new tab; drop focus so it doesn't keep a focus ring.
+  document.getElementById('version').addEventListener('click', function (e) { e.currentTarget.blur(); });
 
   // ---------- input ----------
   document.addEventListener('keydown', function (e) {

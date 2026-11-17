@@ -343,19 +343,27 @@ kbd {
 .clean .ui-toggle:hover { opacity: .8; }
 .clean .ui-toggle span { display: none; }
 
-/* App version: faint, lower-left, only while the controls are visible. */
+/* App version: faint, lower-left, only while the controls are visible. Links to the GitHub repo. */
 .version {
   position: fixed;
   left: clamp(12px, 3vh, 32px);
   bottom: clamp(12px, 2.6vh, 28px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--mist);
   font: 14px/1.2 var(--ui);
   font-variant-numeric: tabular-nums;
+  text-decoration: none;
   opacity: .6;
-  pointer-events: none;
   user-select: none;
+  transition: opacity .2s;
 }
-.version:empty { display: none; }
+.version svg { width: 15px; height: 15px; flex: none; }
+.version:hover, .version:focus-visible { opacity: 1; }
+.version:hover span, .version:focus-visible span { text-decoration: underline; text-underline-offset: 3px; }
+.version:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }
+.version[hidden] { display: none; }
 
 /* ---------- result and game-over cards ---------- */
 .result {

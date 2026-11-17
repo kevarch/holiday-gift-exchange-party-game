@@ -48,7 +48,7 @@ At least one action is required, and every action needs a title. Any number work
 
 Presses during a spin are ignored, and held-down keys don't repeat, so a bumped clicker can't double-spin.
 
-**Version:** while the controls are visible, the app version (e.g. `v1.0.0`) shows small and faint in the bottom-left corner. It's set in `js/version.js`; `CHANGELOG.md` lists what changed in each version.
+**Version:** while the controls are visible, the app version (e.g. `v1.0.0`) shows small and faint in the bottom-left corner next to a GitHub icon; clicking it opens the project's GitHub page in a new tab. It's set in `js/version.js`; `CHANGELOG.md` lists what changed in each version.
 
 ## Behavior
 

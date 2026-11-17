@@ -28,6 +28,7 @@ window.TEXT = {
   hideControls: 'Hide controls',
   showControls: 'Show controls',
   versionLabel: 'v{version}',              // lower-left corner; the number lives in js/version.js
+  versionLink: 'View on GitHub',           // tooltip on the version number
 
   // ---------- timer ----------
   timerSetMinutes: 'Set minutes',          // tooltip on the clock and the pencil button
