@@ -560,10 +560,31 @@
     return h ? h + ':' + pad(m) + ':' + pad(sec) : m + ':' + pad(sec);
   }
 
+  // Times of an hour or more ("1:00:00") are wider than the timer box allows, so shrink
+  // the clock's font just enough to fit. Digits are fixed-width, so this only needs
+  // re-measuring when the text length or the window size changes.
+  var fittedLength = 0;
+  function fitTimerTime() {
+    var len = timerTime.textContent.length;
+    if (len === fittedLength) return;
+    timerTime.style.fontSize = '';
+    var box = getComputedStyle(timerEl);
+    var room = timerEl.clientWidth - parseFloat(box.paddingLeft) - parseFloat(box.paddingRight);
+    if (room <= 0) return; // not laid out yet; try again next render
+    fittedLength = len;
+    var need = timerTime.scrollWidth;
+    if (need > room) {
+      var size = parseFloat(getComputedStyle(timerTime).fontSize);
+      timerTime.style.fontSize = Math.floor(size * room / need) + 'px';
+    }
+  }
+  window.addEventListener('resize', function () { fittedLength = 0; fitTimerTime(); });
+
   function renderTimer() {
     var left = timeLeft();
     var running = timerRunning();
     timerTime.textContent = formatTime(left);
+    fitTimerTime();
     var status = '';
     if (timer.over) status = t('timerOver');
     else if (!running && timerStarted()) status = t('timerPaused');
