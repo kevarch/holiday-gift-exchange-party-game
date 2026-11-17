@@ -60,7 +60,7 @@ Presses during a spin are ignored, and held-down keys don't repeat, so a bumped 
 
 ## Game timer
 
-A countdown sits in a box in the upper-left corner, big enough to read across the room. It sets how long the game lasts.
+A countdown sits in a box in the upper-left corner, big enough to read across the room. It sets how long the game lasts. It's the top-most item on screen: the result card, game-over card, and editors all open underneath it, so the clock never disappears. (On phone-size screens, where the box sits under the title and the cards fill the screen, the cards cover it.)
 
 - **Set minutes:** click the time (or the pencil button). Whole minutes, 1–600; default 30. Saving resets the clock to the new time.
 - **Start / pause:** `T` or the play / pause button. While paused the time dims and reads "Paused".
