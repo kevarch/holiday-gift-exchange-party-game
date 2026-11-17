@@ -18,6 +18,7 @@
     [].forEach.call(document.querySelectorAll('[data-html]'), function (el) { el.innerHTML = t(el.dataset.html); });
     [].forEach.call(document.querySelectorAll('[data-title]'), function (el) { el.title = t(el.dataset.title); });
     [].forEach.call(document.querySelectorAll('[data-aria-label]'), function (el) { el.setAttribute('aria-label', t(el.dataset.ariaLabel)); });
+    if (window.APP_VERSION) document.getElementById('version').textContent = t('versionLabel', { version: window.APP_VERSION });
   }
   applyText();
 

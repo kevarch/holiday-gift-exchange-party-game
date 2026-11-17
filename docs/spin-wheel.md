@@ -44,9 +44,11 @@ At least one action is required, and every action needs a title. Any number work
 | `H` | Hide / show controls (clean display for the audience) |
 | Mouse click on the wheel | Spin |
 
-**Clean display:** `H` hides the key hints, the corner buttons and the timer buttons, leaving the title, clock and wheel. A faint `H` tip stays in the bottom-right corner; click it or press `H` to bring the controls back. Going fullscreen turns it on; the setting is remembered across reloads.
+**Clean display:** `H` hides the key hints, the corner buttons, the timer buttons and the version number, leaving the title, clock and wheel. A faint `H` tip stays in the bottom-right corner; click it or press `H` to bring the controls back. Going fullscreen turns it on; the setting is remembered across reloads.
 
 Presses during a spin are ignored, and held-down keys don't repeat, so a bumped clicker can't double-spin.
+
+**Version:** while the controls are visible, the app version (e.g. `v1.0.0`) shows small and faint in the bottom-left corner. It's set in `js/version.js`; `CHANGELOG.md` lists what changed in each version.
 
 ## Behavior
 

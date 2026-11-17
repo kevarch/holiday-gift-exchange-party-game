@@ -82,7 +82,7 @@ The countdown sits in the upper-left corner.
 
 ### Clean display
 
-Press <kbd>H</kbd> (or go fullscreen) to hide the hints and buttons, leaving just the title, clock, and wheel. A small **H** tip stays in the corner. Click it or press <kbd>H</kbd> to bring the controls back.
+Press <kbd>H</kbd> (or go fullscreen) to hide the hints, buttons, and version number, leaving just the title, clock, and wheel. A small **H** tip stays in the corner. Click it or press <kbd>H</kbd> to bring the controls back.
 
 ## Using a presentation clicker
 
@@ -119,8 +119,10 @@ css/styles.css      Styles
 js/actions.js       Default wheel actions
 js/strings.js       All on-screen wording
 js/app.js           Wheel, timer, controls, and editors
+js/version.js       App version number
 assets/             Images, sounds, fonts (currently empty)
 docs/spin-wheel.md  Full behavior spec
+CHANGELOG.md        What changed in each version
 LICENSE             MIT License
 ```
 

@@ -178,7 +178,7 @@ kbd {
 
 /* Clean display (H): hide the chrome so the room only sees the wheel and the clock.
    Fullscreen turns this on automatically. */
-.clean .hint, .clean .corner, .clean .timer-controls { display: none; }
+.clean .hint, .clean .corner, .clean .timer-controls, .clean .version { display: none; }
 .clean .timer-time { cursor: default; }
 
 /* Always-visible tip for toggling the clean display. */
@@ -204,6 +204,20 @@ kbd {
 .clean .ui-toggle { opacity: .2; padding-right: 4px; border-color: transparent; background: none; }
 .clean .ui-toggle:hover { opacity: .8; }
 .clean .ui-toggle span { display: none; }
+
+/* App version: faint, lower-left, only while the controls are visible. */
+.version {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  color: var(--muted);
+  font: 12px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+  opacity: .45;
+  pointer-events: none;
+  user-select: none;
+}
+.version:empty { display: none; }
 
 /* Result card */
 .result {

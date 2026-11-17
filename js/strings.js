@@ -27,6 +27,7 @@ window.TEXT = {
   showHideControlsButton: 'Show / hide controls (H)',
   hideControls: 'Hide controls',
   showControls: 'Show controls',
+  versionLabel: 'v{version}',              // lower-left corner; the number lives in js/version.js
 
   // ---------- timer ----------
   timerSetMinutes: 'Set minutes',          // tooltip on the clock and ✎ button
