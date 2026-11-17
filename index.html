@@ -4,30 +4,123 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title></title>
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <!-- Icons and decorations, drawn once and reused with <use href="#id">. -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><g fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></g></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v5h5"/></g></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></g></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L13 19V5L7.5 9.5z"/><path d="M16.5 9a4.5 4.5 0 0 1 0 6"/><path d="M19 6.5a8 8 0 0 1 0 11"/></g></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L13 19V5L7.5 9.5z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></g></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h9M19 6h1M4 12h3M13 12h7M4 18h11M20 18h0"/><circle cx="16" cy="6" r="2.4"/><circle cx="10" cy="12" r="2.4"/><circle cx="17.5" cy="18" r="2.4"/></g></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 1l2.9 7.1L22 11l-7.1 2.9L12 21l-2.9-7.1L2 11l7.1-2.9z" fill="currentColor"/></symbol>
+    <symbol id="i-snowflake" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 12V2.5M9.4 4.6L12 6.6l2.6-2"/>
+      <path d="M12 12V2.5M9.4 4.6L12 6.6l2.6-2" transform="rotate(60 12 12)"/>
+      <path d="M12 12V2.5M9.4 4.6L12 6.6l2.6-2" transform="rotate(120 12 12)"/>
+      <path d="M12 12V2.5M9.4 4.6L12 6.6l2.6-2" transform="rotate(180 12 12)"/>
+      <path d="M12 12V2.5M9.4 4.6L12 6.6l2.6-2" transform="rotate(240 12 12)"/>
+      <path d="M12 12V2.5M9.4 4.6L12 6.6l2.6-2" transform="rotate(300 12 12)"/>
+    </g></symbol>
+    <symbol id="holly" viewBox="-50 -32 66 64">
+      <g transform="rotate(200)"><path d="M0 0Q7 -2 10 -8Q14 -5 20 -10Q24 -6 30 -9Q35 -4 44 0Q35 4 30 9Q24 6 20 10Q14 5 10 8Q7 2 0 0Z" fill="#2F8A5B"/><path d="M3 0H40" stroke="#1B5E3D" stroke-width="1.6"/></g>
+      <g transform="rotate(155)"><path d="M0 0Q7 -2 10 -8Q14 -5 20 -10Q24 -6 30 -9Q35 -4 44 0Q35 4 30 9Q24 6 20 10Q14 5 10 8Q7 2 0 0Z" fill="#3A9A68"/><path d="M3 0H40" stroke="#1B5E3D" stroke-width="1.6"/></g>
+      <circle cx="3" cy="-5" r="6" fill="#D7333C"/><circle cx="9" cy="3" r="6" fill="#C42B35"/><circle cx="-2" cy="4" r="6" fill="#E04049"/>
+      <circle cx="1.5" cy="-7" r="1.8" fill="#FFFFFF" opacity=".6"/><circle cx="-3.5" cy="2" r="1.8" fill="#FFFFFF" opacity=".6"/>
+    </symbol>
+    <symbol id="bow" viewBox="-115 -70 230 146">
+      <path d="M-8 4L-50 70L-32 63L-24 80L8 10Z" fill="#8E1A22"/>
+      <path d="M8 4L50 70L32 63L24 80L-8 10Z" fill="#A01E25"/>
+      <path d="M-4 -2C-30 -52 -104 -56 -100 -12C-98 18 -40 16 -4 -2Z" fill="#C42B35"/>
+      <path d="M-16 -7C-38 -36 -82 -38 -82 -14C-82 0 -46 2 -16 -7Z" fill="#8E1A22" opacity=".5"/>
+      <path d="M4 -2C30 -52 104 -56 100 -12C98 18 40 16 4 -2Z" fill="#C42B35"/>
+      <path d="M16 -7C38 -36 82 -38 82 -14C82 0 46 2 16 -7Z" fill="#8E1A22" opacity=".5"/>
+      <rect x="-17" y="-19" width="34" height="32" rx="11" fill="#D7333C" stroke="#8E1A22" stroke-width="2"/>
+      <path d="M-9 -12C-4 -15 4 -15 9 -12" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="bulb" viewBox="-20 -2 40 46" overflow="visible">
+      <circle cy="22" r="20" fill="currentColor" opacity=".2"/>
+      <rect x="-5" y="0" width="10" height="9" rx="2" fill="#2B3A31"/>
+      <path d="M-7 9h14c2 10 1 22-7 26c-8-4-9-16-7-26z" fill="currentColor"/>
+      <ellipse cx="-2.5" cy="17" rx="1.6" ry="4" fill="#FFFFFF" opacity=".55"/>
+    </symbol>
+  </svg>
+
+  <!-- Background scenery: falling snow, pine trees, a string of lights. -->
+  <div class="snow" aria-hidden="true"></div>
+  <svg class="trees trees-left" viewBox="0 680 342 400" preserveAspectRatio="xMinYMax meet" aria-hidden="true">
+    <path d="M150 780L81 906L219 906ZM150 846L49 990L251 990ZM150 915L24 1080L276 1080Z" fill="#0F271C"/>
+    <path d="M30 700L-58 860L118 860ZM30 784L-98 966L158 966ZM30 871L-130 1080L190 1080Z" fill="#0B1F16"/>
+    <path d="M250 860L199 952L301 952ZM250 908L176 1014L324 1014ZM250 959L158 1080L342 1080Z" fill="#0B1F16"/>
+  </svg>
+  <svg class="trees trees-right" viewBox="1563 680 357 400" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
+    <path d="M1770 760L1696 894L1844 894ZM1770 830L1662 984L1878 984ZM1770 904L1636 1080L1904 1080Z" fill="#0F271C"/>
+    <path d="M1890 680L1798 848L1982 848ZM1890 768L1756 960L2024 960ZM1890 860L1722 1080L2058 1080Z" fill="#0B1F16"/>
+    <path d="M1660 850L1607 947L1713 947ZM1660 901L1583 1011L1737 1011ZM1660 954L1563 1080L1757 1080Z" fill="#0B1F16"/>
+  </svg>
+  <svg class="lights" viewBox="0 0 1920 80" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+    <path class="wire" d="M-40 4Q120 52 280 4M280 4Q440 52 600 4M600 4Q760 52 920 4M920 4Q1080 52 1240 4M1240 4Q1400 52 1560 4M1560 4Q1720 52 1880 4M1880 4Q2040 52 2200 4"/>
+    <g transform="translate(13 17) rotate(7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#E5484D"/></g>
+    <g transform="translate(67 25) rotate(3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#F2C14E"/></g>
+    <g transform="translate(120 28)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#3FB37F"/></g>
+    <g transform="translate(173 25) rotate(-3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#FFF2D6"/></g>
+    <g transform="translate(227 17) rotate(-7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#E5484D"/></g>
+    <g transform="translate(333 17) rotate(7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#F2C14E"/></g>
+    <g transform="translate(387 25) rotate(3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#3FB37F"/></g>
+    <g transform="translate(440 28)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#FFF2D6"/></g>
+    <g transform="translate(493 25) rotate(-3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#E5484D"/></g>
+    <g transform="translate(547 17) rotate(-7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#F2C14E"/></g>
+    <g transform="translate(653 17) rotate(7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#3FB37F"/></g>
+    <g transform="translate(707 25) rotate(3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#FFF2D6"/></g>
+    <g transform="translate(760 28)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#E5484D"/></g>
+    <g transform="translate(813 25) rotate(-3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#F2C14E"/></g>
+    <g transform="translate(867 17) rotate(-7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#3FB37F"/></g>
+    <g transform="translate(973 17) rotate(7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#FFF2D6"/></g>
+    <g transform="translate(1027 25) rotate(3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#E5484D"/></g>
+    <g transform="translate(1080 28)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#F2C14E"/></g>
+    <g transform="translate(1133 25) rotate(-3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#3FB37F"/></g>
+    <g transform="translate(1187 17) rotate(-7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#FFF2D6"/></g>
+    <g transform="translate(1293 17) rotate(7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#E5484D"/></g>
+    <g transform="translate(1347 25) rotate(3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#F2C14E"/></g>
+    <g transform="translate(1400 28)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#3FB37F"/></g>
+    <g transform="translate(1453 25) rotate(-3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#FFF2D6"/></g>
+    <g transform="translate(1507 17) rotate(-7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#E5484D"/></g>
+    <g transform="translate(1613 17) rotate(7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#F2C14E"/></g>
+    <g transform="translate(1667 25) rotate(3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#3FB37F"/></g>
+    <g transform="translate(1720 28)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#FFF2D6"/></g>
+    <g transform="translate(1773 25) rotate(-3)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#E5484D"/></g>
+    <g transform="translate(1827 17) rotate(-7)"><use href="#bulb" x="-20" y="-2" width="40" height="46" color="#F2C14E"/></g>
+  </svg>
+
   <main id="app">
     <header class="top">
+      <svg class="holly" aria-hidden="true"><use href="#holly"/></svg>
       <h1 data-text="heading"></h1>
+      <svg class="holly flip" aria-hidden="true"><use href="#holly"/></svg>
     </header>
 
     <div class="timer" id="timer">
       <button type="button" class="timer-time" id="timer-time" data-title="timerSetMinutes">30:00</button>
       <span class="timer-status" id="timer-status"></span>
       <div class="timer-controls">
-        <button type="button" id="timer-toggle" class="icon-btn">▶</button>
-        <button type="button" id="timer-reset" class="icon-btn" data-title="timerResetButton">↺</button>
-        <button type="button" id="timer-edit" class="icon-btn" data-title="timerSetMinutes">✎</button>
+        <button type="button" id="timer-toggle" class="icon-btn"><svg aria-hidden="true"><use href="#i-play"/></svg></button>
+        <button type="button" id="timer-reset" class="icon-btn" data-title="timerResetButton" data-aria-label="timerResetButton"><svg aria-hidden="true"><use href="#i-reset"/></svg></button>
+        <button type="button" id="timer-edit" class="icon-btn" data-title="timerSetMinutes" data-aria-label="timerSetMinutes"><svg aria-hidden="true"><use href="#i-edit"/></svg></button>
       </div>
     </div>
 
     <section class="stage" id="stage">
-      <svg class="pointer" id="pointer" viewBox="0 0 60 70" aria-hidden="true">
-        <path d="M30 68 L6 14 A26 26 0 0 1 54 14 Z" fill="#f6efe2" stroke="#8c1c13" stroke-width="4" stroke-linejoin="round"/>
-        <circle cx="30" cy="22" r="7" fill="#c0392b"/>
-      </svg>
-      <canvas id="wheel" data-aria-label="wheelLabel"></canvas>
+      <div class="wheel-wrap">
+        <canvas id="wheel" data-aria-label="wheelLabel"></canvas>
+        <svg class="pointer" id="pointer" viewBox="0 0 60 72" aria-hidden="true">
+          <path d="M30 69L6 17A26 26 0 0 1 54 17Z" fill="#FBF1DE" stroke="#8E1A22" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M30 10.5l3.4 7 7.7 1.1-5.6 5.4 1.3 7.7-6.8-3.6-6.8 3.6 1.3-7.7-5.6-5.4 7.7-1.1z" fill="#E8B44F" stroke="#9C6E22" stroke-width="1.2" stroke-linejoin="round"/>
+        </svg>
+      </div>
     </section>
 
     <footer class="hint" id="hint">
@@ -41,8 +134,8 @@
     </footer>
 
     <div class="corner">
-      <button type="button" id="sound-btn" class="icon-btn">🔊</button>
-      <button type="button" id="edit-btn" class="icon-btn" data-title="editActionsButton">⚙</button>
+      <button type="button" id="sound-btn" class="icon-btn"><svg aria-hidden="true"><use href="#i-sound"/></svg></button>
+      <button type="button" id="edit-btn" class="icon-btn" data-title="editActionsButton" data-aria-label="editActionsButton"><svg aria-hidden="true"><use href="#i-sliders"/></svg></button>
     </div>
 
     <button type="button" class="ui-toggle" id="ui-toggle" data-title="showHideControlsButton"><kbd>H</kbd> <span id="ui-toggle-label"></span></button>
@@ -52,7 +145,8 @@
 
   <div class="result" id="result" hidden>
     <div class="result-card">
-      <div class="result-kicker" data-text="resultKicker"></div>
+      <svg class="bow" aria-hidden="true"><use href="#bow"/></svg>
+      <div class="result-kicker"><svg class="spark" aria-hidden="true"><use href="#i-spark"/></svg><span data-text="resultKicker"></span><svg class="spark" aria-hidden="true"><use href="#i-spark"/></svg></div>
       <div class="result-text" id="result-text"></div>
       <div class="result-details" id="result-details"></div>
       <div class="result-next" data-text="resultNext"></div>
@@ -61,10 +155,12 @@
 
   <div class="result gameover" id="gameover" hidden>
     <div class="result-card">
-      <div class="result-kicker" data-text="gameoverKicker"></div>
+      <div class="medallion" aria-hidden="true"><svg><use href="#i-snowflake"/></svg></div>
+      <div class="result-kicker"><svg class="spark" aria-hidden="true"><use href="#i-spark"/></svg><span data-text="gameoverKicker"></span><svg class="spark" aria-hidden="true"><use href="#i-spark"/></svg></div>
       <div class="result-text" data-text="gameoverTitle"></div>
       <div class="result-details" data-text="gameoverDetails"></div>
       <div class="result-next" data-text="gameoverNext"></div>
+      <svg class="icicles" viewBox="0 -4 1000 66" preserveAspectRatio="none" aria-hidden="true"><path d="M0 -4L0 0L15 40L30 0L50 0L60 22L70 0L95 0L110 58L125 0L150 0L159 26L168 0L190 0L206 46L222 0L250 0L258 20L266 0L290 0L305 62L320 0L345 0L355 30L365 0L390 0L405 44L420 0L450 0L458 18L466 0L490 0L506 56L522 0L548 0L557 28L566 0L590 0L605 48L620 0L650 0L659 22L668 0L690 0L706 60L722 0L750 0L759 26L768 0L790 0L805 42L820 0L850 0L858 20L866 0L890 0L906 54L922 0L950 0L959 30L968 0L1000 0L1000 -4Z"/></svg>
     </div>
   </div>
 
@@ -87,9 +183,12 @@
 
   <div class="editor" id="editor" hidden>
     <form class="editor-card" id="editor-form">
-      <h2 data-text="actionsEditorTitle"></h2>
+      <div class="editor-head">
+        <span class="editor-badge" aria-hidden="true"><svg><use href="#i-sliders"/></svg></span>
+        <h2 data-text="actionsEditorTitle"></h2>
+      </div>
       <p class="editor-help" data-html="actionsEditorHelp"></p>
-      <textarea id="editor-text" rows="10" spellcheck="true" wrap="off"></textarea>
+      <textarea id="editor-text" rows="10" spellcheck="true" wrap="off" data-aria-label="actionsEditorTitle"></textarea>
       <p class="editor-error" id="editor-error"></p>
       <div class="editor-buttons">
         <button type="button" id="editor-reset" class="btn ghost" data-text="actionsEditorReset"></button>

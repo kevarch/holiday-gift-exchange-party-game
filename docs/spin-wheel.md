@@ -25,7 +25,7 @@ Wording rule: details speak directly to the player who spun ("you"), and stay as
 
 The list is editable two ways:
 
-- **In the app:** press `E` (or the ⚙ button) to open the editor. One action per line, written as `Title | Details` (the `|` and details can be left off). Saved to `localStorage` in that browser, so it survives reloads. "Reset to defaults" restores the list above.
+- **In the app:** press `E` (or the sliders button in the top-right corner) to open the editor. One action per line, written as `Title | Details` (the `|` and details can be left off). Saved to `localStorage` in that browser, so it survives reloads. "Reset to defaults" restores the list above.
 - **Defaults:** `js/actions.js` holds the default list as `{ title, details }` entries. Edit it to change what a fresh browser (or "Reset to defaults") gets.
 
 At least one action is required, and every action needs a title. Any number works; labels shrink to fit as slices get narrower.
@@ -55,17 +55,33 @@ Presses during a spin are ignored, and held-down keys don't repeat, so a bumped 
 - Each spin picks a slice uniformly at random, then animates 5–7 full turns plus the offset to land there over ~5–6 seconds, easing out.
 - The stopping point is somewhere inside the slice, never right on a divider, so there's no ambiguity about the result.
 - A tick plays as each divider passes the pointer; a chime plays on the result. Sound is generated in the browser (no audio files).
-- On stopping, the winning slice is highlighted and a result card appears with confetti, showing the title in large type and the details below it. Confetti is skipped when the OS has reduced motion turned on.
+- While it spins, the marquee lights on the rim chase each other.
+- On stopping, the other slices dim, the winning slice is outlined, and a result card appears with confetti, showing the title in large type and the details below it. Confetti is skipped when the OS has reduced motion turned on.
 
 ## Game timer
 
 A countdown sits in a box in the upper-left corner, big enough to read across the room. It sets how long the game lasts.
 
-- **Set minutes:** click the time (or ✎). Whole minutes, 1–600; default 30. Saving resets the clock to the new time.
-- **Start / pause:** `T` or the ▶/⏸ button. While paused the time dims and reads "Paused".
-- **Reset:** `R` or ↺. Puts the clock back to the full time. If the game is under way it asks first, so a stray key press can't wipe it.
+- **Set minutes:** click the time (or the pencil button). Whole minutes, 1–600; default 30. Saving resets the clock to the new time.
+- **Start / pause:** `T` or the play / pause button. While paused the time dims and reads "Paused".
+- **Reset:** `R` or the reset (circular arrow) button. Puts the clock back to the full time. If the game is under way it asks first, so a stray key press can't wipe it.
 - The last minute turns red; the last 10 seconds pulse, with a beep each second (the final 3 are higher).
 - The clock (minutes, time left, and whether it's running) is saved in `localStorage`, so a reload picks up where it was. It keeps counting while the page is closed.
 - In clean display (`H`, or fullscreen) the time stays visible; only the buttons hide. Use the keys.
 
-**When time runs out, the game is over:** a holiday jingle plays (bells, sleigh bells, and a big final chord) and a "Time's up! Game Over" card says all gifts are frozen. The wheel turns icy and won't spin; pressing Next just brings the card back. If a spin is in progress at zero, it finishes but doesn't count. Press `R` (or ↺, or set new minutes) to unfreeze and start a new game.
+**When time runs out, the game is over:** a holiday jingle plays (bells, sleigh bells, and a big final chord) and a "Time's up! Game Over" card says all gifts are frozen, with a flurry of snowflakes instead of confetti. The wheel turns icy and won't spin; pressing Next just brings the card back. If a spin is in progress at zero, it finishes but doesn't count. Press `R` (or the reset button, or set new minutes) to unfreeze and start a new game.
+
+## Look
+
+A night-time holiday scene in midnight pine, brass, and cranberry, built to read across a room on a TV.
+
+- **Scenery:** a string of colored lights along the top (they twinkle), gently falling snow, and pine trees in the bottom corners.
+- **Title:** gold Fraunces serif between two holly sprigs.
+- **Wheel:** a brass rim with 24 marquee lights, slices in cranberry, pine, gold, and cream (repeating in that order), gold dividers, and a cream hub with a wrapped gift that stays upright as the wheel turns. Labels are Figtree, sized to fit, with the lines evened out. The pointer is cream with a gold star.
+- **Result card:** a cream gift tag with a stitched edge, a red bow on top, and a gold-and-red border.
+- **Game over card:** an icy blue card with a snowflake medallion on top and icicles hanging from the bottom.
+- **Controls:** drawn line icons (no emoji), keyboard hints styled as keys on a dark bar.
+
+Fonts are bundled in `assets/fonts/` (embedded in `fonts.css` so they load from `file://` in every browser). With reduced motion turned on in the OS, the snow and lights hold still and there's no confetti.
+
+The design was made as a Claude Design canvas (main screen, spin result, game over, actions editor, and a style kit with every color, font, and control).

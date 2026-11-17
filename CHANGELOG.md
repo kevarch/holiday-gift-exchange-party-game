@@ -2,6 +2,18 @@
 
 All notable changes to the Holiday Gift Exchange. Versions follow [Semantic Versioning](https://semver.org): **patch** for fixes and wording tweaks, **minor** for new features, **major** for big changes. The current version is set in `js/version.js` and shows in the lower-left corner of the game while the controls are visible.
 
+## 2.0.0 (2026-11-17)
+
+A full holiday makeover.
+
+- New look: midnight pine, brass, and cranberry, with a string of twinkling lights, falling snow, and pine trees
+- Wheel redrawn with a brass rim and marquee lights (they chase while it spins), gold dividers, rounded shading, and a wrapped gift in the hub
+- Wheel labels use evened-out lines ("Everyone / Pass Left")
+- Gift-tag result card with a red bow; icy game-over card with a snowflake medallion, icicles, and a flurry of snowflakes
+- New star-topped pointer, framed timer, and line icons in place of emoji
+- Restyled editors, key hints, and buttons
+- Bundled fonts: Fraunces and Figtree (SIL Open Font License), embedded so they work offline from `file://`
+
 ## 1.0.0 (2026-11-17)
 
 First versioned release. Includes:

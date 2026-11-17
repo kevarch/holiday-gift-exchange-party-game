@@ -30,20 +30,20 @@ window.TEXT = {
   versionLabel: 'v{version}',              // lower-left corner; the number lives in js/version.js
 
   // ---------- timer ----------
-  timerSetMinutes: 'Set minutes',          // tooltip on the clock and ✎ button
+  timerSetMinutes: 'Set minutes',          // tooltip on the clock and the pencil button
   timerStart: 'Start timer (T)',
   timerPause: 'Pause timer (T)',
   timerResetButton: 'Reset timer (R)',
   timerPaused: 'Paused',
-  timerOver: '❄ Game over · gifts frozen',
+  timerOver: 'Game over · gifts frozen',
   timerResetConfirm: 'Reset the timer to {minutes} minutes?',
 
   // ---------- spin result card ----------
-  resultKicker: '🎁  Everybody, listen up!  🎁',
+  resultKicker: 'Everybody, listen up!',   // gold stars are added on each side
   resultNext: 'Press ▶ to spin again',
 
   // ---------- game over card ----------
-  gameoverKicker: '⏰  Time\'s up!  ⏰',
+  gameoverKicker: 'Time\'s up!',           // stars are added on each side
   gameoverTitle: 'Game Over',
   gameoverDetails: 'All gifts are frozen. The gift you\'re holding is yours!',
   gameoverNext: 'Press R to reset the timer',

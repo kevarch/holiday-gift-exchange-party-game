@@ -9,11 +9,12 @@ It runs entirely in your web browser from a single folder: no install, no accoun
 ## Features
 
 - **Big, readable wheel** designed for a shared screen across the room
+- **Holiday look**: a brass-rimmed wheel with marquee lights, a string of colored lights, gently falling snow, and gift-tag result cards
 - **Presentation clicker support**: spin with the Next button, dismiss with Back
 - **Game timer** with a red final minute, a 10-second countdown beep, a holiday jingle at the end, and a "Game Over" freeze at zero
 - **Editable actions**: change the wheel slices right in the app, no coding needed
 - **Clean display mode** that hides every control except the wheel and the clock
-- **Sound and confetti** (sound is generated in the browser; confetti respects your system's reduced-motion setting)
+- **Sound and confetti** (sound is generated in the browser; confetti, falling snow, and twinkling lights respect your system's reduced-motion setting)
 - **Remembers your setup**: actions, timer, and display settings survive a page reload
 
 ## Quick start
@@ -75,9 +76,9 @@ Presses during a spin are ignored, so a bumped clicker can't double-spin.
 
 The countdown sits in the upper-left corner.
 
-- **Set the length:** click the time (or ✎) and enter 1–600 minutes.
-- **Start / pause:** <kbd>T</kbd> or the ▶ button.
-- **Reset:** <kbd>R</kbd> or ↺. Resetting also unfreezes the wheel after a game ends.
+- **Set the length:** click the time (or the pencil button) and enter 1–600 minutes.
+- **Start / pause:** <kbd>T</kbd> or the play / pause button.
+- **Reset:** <kbd>R</kbd> or the reset (circular arrow) button. Resetting also unfreezes the wheel after a game ends.
 - The clock survives a page reload, and keeps counting even while the page is closed.
 
 ### Clean display
@@ -94,7 +95,7 @@ To check your clicker before the party, open **`clicker-test.html`**. It shows w
 
 ### Change the wheel actions
 
-**In the app (easiest):** press <kbd>E</kbd> or click ⚙. Write one action per line:
+**In the app (easiest):** press <kbd>E</kbd> or click the sliders button in the top-right corner. Write one action per line:
 
 ```
 Short title | Longer explanation
@@ -120,7 +121,7 @@ js/actions.js       Default wheel actions
 js/strings.js       All on-screen wording
 js/app.js           Wheel, timer, controls, and editors
 js/version.js       App version number
-assets/             Images, sounds, fonts (currently empty)
+assets/fonts/       Bundled fonts (Fraunces, Figtree) and their licenses
 docs/spin-wheel.md  Full behavior spec
 CHANGELOG.md        What changed in each version
 LICENSE             MIT License
@@ -133,3 +134,5 @@ For the full details of how the wheel, timer, and controls behave, see [docs/spi
 ## License
 
 Released under the [MIT License](LICENSE). You're free to use, modify, and share it, including for your own parties and events.
+
+The bundled fonts, [Fraunces](https://github.com/undercasetype/Fraunces) and [Figtree](https://github.com/erikdkennedy/figtree), are licensed under the SIL Open Font License 1.1 (see `assets/fonts/`).

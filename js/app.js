@@ -31,11 +31,12 @@
   var POINTER_ANGLE = Math.PI * 1.5; // straight up, in canvas angle terms
 
   var SLICE_COLORS = [
-    { fill: '#c0392b', text: '#fff7ec' }, // red
-    { fill: '#1e7a4f', text: '#fff7ec' }, // green
-    { fill: '#f2c14e', text: '#3a1d0e' }, // gold
-    { fill: '#f6efe2', text: '#8c1c13' }  // cream
+    { fill: '#b8262f', text: '#fff7ea' }, // cranberry
+    { fill: '#1d6646', text: '#fff7ea' }, // pine
+    { fill: '#e8b44f', text: '#4a230f' }, // gold
+    { fill: '#fbf1de', text: '#a01e25' }  // cream
   ];
+  var LABEL_FONT = '"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif';
 
   // Each action is { title, details }. A plain string is accepted as a title with no details.
   function normalize(a) {
@@ -103,6 +104,13 @@
   // ---------- helpers ----------
   function mod(a, n) { return ((a % n) + n) % n; }
 
+  // Icon buttons hold <svg><use href="#icon-id"></svg>; swap the icon and its label.
+  function setIcon(btn, id, label) {
+    btn.querySelector('use').setAttribute('href', '#' + id);
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+  }
+
   function sliceColor(i, n) {
     var c = i % SLICE_COLORS.length;
     // Keep the last slice from matching its neighbor, the first slice.
@@ -134,144 +142,244 @@
     return lines;
   }
 
-  // Find the largest font size where the label fits in the slice.
+  // Find the largest font size where the label fits in the slice, then even out the
+  // line lengths ("Everyone / Pass Left" rather than "Everyone Pass / Left").
   function fitLabel(text, maxWidth, maxHeight, maxSize, minSize) {
     for (var size = maxSize; size >= minSize; size -= 1) {
-      ctx.font = '800 ' + size + 'px system-ui, -apple-system, "Segoe UI", sans-serif';
+      ctx.font = '800 ' + size + 'px ' + LABEL_FONT;
       var lines = wrap(text, maxWidth);
       var widest = Math.max.apply(null, lines.map(function (l) { return ctx.measureText(l).width; }));
-      if (widest <= maxWidth && lines.length * size * 1.12 <= maxHeight) return { size: size, lines: lines };
+      if (widest <= maxWidth && lines.length * size * 1.12 <= maxHeight) {
+        return { size: size, lines: balance(text, lines.length, maxWidth) };
+      }
     }
-    ctx.font = '800 ' + minSize + 'px system-ui, -apple-system, "Segoe UI", sans-serif';
+    ctx.font = '800 ' + minSize + 'px ' + LABEL_FONT;
     return { size: minSize, lines: wrap(text, maxWidth) };
   }
 
+  // The narrowest wrap that still uses the same number of lines.
+  function balance(text, count, maxWidth) {
+    if (count < 2) return wrap(text, maxWidth);
+    var lo = 0;
+    var hi = maxWidth;
+    for (var k = 0; k < 14; k++) {
+      var mid = (lo + hi) / 2;
+      if (wrap(text, mid).length <= count) hi = mid;
+      else lo = mid;
+    }
+    return wrap(text, hi);
+  }
+
   // ---------- drawing ----------
+  // The wheel is drawn in a fixed 800 × 800 space (radius 400) and scaled to fit,
+  // so the label layout only needs measuring when the actions change.
+  var WHEEL = {
+    outer: 393,  // brass rim
+    rimIn: 355,  // dark edge inside the rim
+    R: 352,      // slices
+    bulbs: 374,  // marquee lights on the rim
+    hub: 80
+  };
   var labelCache = null;
+  var wheelWrap = canvas.parentNode;
 
   function resize() {
     var rect = stageEl.getBoundingClientRect();
-    var size = Math.floor(Math.max(200, Math.min(rect.height - 24, rect.width)));
+    // Leave room above the wheel for the pointer, which sticks out 3.6% of the wheel's size.
+    var size = Math.floor(Math.max(200, Math.min((rect.height - 8) / 1.04, rect.width)));
     var dpr = window.devicePixelRatio || 1;
     canvas.style.width = size + 'px';
     canvas.style.height = size + 'px';
     canvas.width = Math.round(size * dpr);
     canvas.height = Math.round(size * dpr);
-    labelCache = null;
+    wheelWrap.style.marginTop = Math.round(size * 0.036) + 'px';
     draw();
+  }
+
+  function slicePath(start, end) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, WHEEL.R, start, end);
+    ctx.closePath();
+  }
+
+  function circle(r) {
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, TAU);
   }
 
   function draw() {
     var W = canvas.width;
-    var c = W / 2;
-    var outer = c * 0.98;
-    var R = c * 0.9;
+    var R = WHEEL.R;
     var n = actions.length;
     var seg = TAU / n;
+    var i;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, W, W);
-    ctx.translate(c, c);
+    ctx.translate(W / 2, W / 2);
+    ctx.scale(W / 800, W / 800);
 
-    // Rim
-    ctx.beginPath();
-    ctx.arc(0, 0, outer, 0, TAU);
-    ctx.fillStyle = '#8c1c13';
+    // Brass rim, lit from the upper left (the lighting doesn't turn with the wheel)
+    var brass = ctx.createLinearGradient(-WHEEL.outer, -WHEEL.outer, WHEEL.outer, WHEEL.outer);
+    brass.addColorStop(0, '#f8e3a3');
+    brass.addColorStop(0.35, '#e2b65a');
+    brass.addColorStop(0.7, '#a9782a');
+    brass.addColorStop(1, '#e8c46e');
+    circle(WHEEL.outer);
+    ctx.fillStyle = brass;
     ctx.fill();
-    ctx.lineWidth = c * 0.012;
-    ctx.strokeStyle = '#f2c14e';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#5e3f10';
     ctx.stroke();
+    circle(WHEEL.rimIn);
+    ctx.fillStyle = '#5e3f10';
+    ctx.fill();
 
-    // Rim lights (rotate with the wheel)
-    var bulbs = 24;
-    for (var b = 0; b < bulbs; b++) {
-      var a = rotation + (b / bulbs) * TAU;
-      var br = (outer + R) / 2;
-      ctx.beginPath();
-      ctx.arc(Math.cos(a) * br, Math.sin(a) * br, c * 0.022, 0, TAU);
-      ctx.fillStyle = b % 2 ? '#fff3c4' : '#f2c14e';
-      ctx.fill();
-    }
-
-    // Labels are measured once per size/action list, then reused every frame.
+    // Labels are measured once per action list, then reused every frame.
     if (!labelCache) {
-      var inner = R * 0.2;
-      var textOuter = R * 0.92;
+      var inner = R * 0.27;
+      var textOuter = R * 0.9;
       var maxWidth = textOuter - inner;
       var mid = (textOuter + inner) / 2;
       var maxHeight = Math.min(2 * Math.sin(Math.min(seg, Math.PI) / 2) * mid * 0.92, R * 0.5);
       if (n === 1) maxHeight = R * 0.5;
       labelCache = actions.map(function (a) {
-        return fitLabel(a.title, maxWidth, maxHeight, Math.round(R * 0.1), Math.max(8, Math.round(R * 0.03)));
+        return fitLabel(a.title, maxWidth, maxHeight, Math.round(R * 0.1), 10);
       });
       labelCache.x = textOuter;
     }
 
-    for (var i = 0; i < n; i++) {
-      var start = rotation + i * seg;
-      var color = sliceColor(i, n);
-
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, R, start, start + seg);
-      ctx.closePath();
-      ctx.fillStyle = color.fill;
+    // Slices
+    for (i = 0; i < n; i++) {
+      slicePath(rotation + i * seg, rotation + (i + 1) * seg);
+      ctx.fillStyle = sliceColor(i, n).fill;
       ctx.fill();
-      if (n > 1) {
-        ctx.lineWidth = c * 0.008;
-        ctx.strokeStyle = 'rgba(58, 29, 14, .35)';
+    }
+
+    // Soft shading so the face looks rounded, like an ornament
+    var shade = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+    shade.addColorStop(0, 'rgba(255, 255, 255, .16)');
+    shade.addColorStop(0.55, 'rgba(255, 255, 255, 0)');
+    shade.addColorStop(1, 'rgba(0, 0, 0, .3)');
+    circle(R);
+    ctx.fillStyle = shade;
+    ctx.fill();
+
+    // Gold dividers
+    if (n > 1) {
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#f3d58a';
+      for (i = 0; i < n; i++) {
+        var a0 = rotation + i * seg;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(a0) * R, Math.sin(a0) * R);
         ctx.stroke();
       }
+    }
 
-      // Label, reading from the hub out to the rim
+    // Labels, reading from the hub out to the rim
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (i = 0; i < n; i++) {
       var label = labelCache[i];
       ctx.save();
-      ctx.rotate(start + seg / 2);
-      ctx.font = '800 ' + label.size + 'px system-ui, -apple-system, "Segoe UI", sans-serif';
-      ctx.fillStyle = color.text;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      var lh = label.size * 1.12;
+      ctx.rotate(rotation + (i + 0.5) * seg);
+      ctx.font = '800 ' + label.size + 'px ' + LABEL_FONT;
+      ctx.fillStyle = sliceColor(i, n).text;
+      var lh = label.size * 1.1;
       for (var l = 0; l < label.lines.length; l++) {
         ctx.fillText(label.lines[l], labelCache.x, (l - (label.lines.length - 1) / 2) * lh);
       }
       ctx.restore();
-
-      // Dim the losing slices once the wheel stops
-      if (winner !== -1 && i !== winner) {
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, R, start, start + seg);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(8, 16, 12, .55)';
-        ctx.fill();
-      }
     }
 
-    // Winning slice outline
+    // Once the wheel stops, dim the other slices and outline the winner
     if (winner !== -1 && n > 1) {
-      var ws = rotation + winner * seg;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, R, ws, ws + seg);
-      ctx.closePath();
-      ctx.lineWidth = c * 0.02;
+      ctx.fillStyle = 'rgba(5, 13, 9, .55)';
+      for (i = 0; i < n; i++) {
+        if (i === winner) continue;
+        slicePath(rotation + i * seg, rotation + (i + 1) * seg);
+        ctx.fill();
+      }
+      slicePath(rotation + winner * seg, rotation + (winner + 1) * seg);
+      ctx.lineWidth = 8;
+      ctx.lineJoin = 'round';
       ctx.strokeStyle = '#fff3c4';
       ctx.stroke();
     }
 
-    // Hub
-    ctx.beginPath();
-    ctx.arc(0, 0, R * 0.16, 0, TAU);
-    ctx.fillStyle = '#f2c14e';
+    // Marquee lights on the rim. They turn with the wheel and chase while it spins.
+    var chase = spinning ? Math.floor(performance.now() / 110) % 2 : -1;
+    for (var b = 0; b < 24; b++) {
+      var ba = rotation + (b / 24) * TAU;
+      var bx = Math.cos(ba) * WHEEL.bulbs;
+      var by = Math.sin(ba) * WHEEL.bulbs;
+      ctx.globalAlpha = b % 2 === chase ? 0.4 : 1;
+      ctx.fillStyle = b % 2 ? '#fff4cf' : '#ffc447';
+      ctx.beginPath();
+      ctx.arc(bx, by, 17, 0, TAU);
+      ctx.globalAlpha *= 0.25;
+      ctx.fill();
+      ctx.globalAlpha = b % 2 === chase ? 0.4 : 1;
+      ctx.beginPath();
+      ctx.arc(bx, by, 8.5, 0, TAU);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    drawHub(brass);
+  }
+
+  // Cream hub with a brass ring and a wrapped gift that stays upright.
+  function drawHub(brass) {
+    circle(WHEEL.hub);
+    ctx.fillStyle = '#5e3f10';
     ctx.fill();
-    ctx.lineWidth = c * 0.014;
-    ctx.strokeStyle = '#8c1c13';
+    circle(74);
+    ctx.fillStyle = '#fbf1de';
+    ctx.fill();
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = brass;
     ctx.stroke();
-    ctx.font = Math.round(R * 0.15) + 'px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🎁', 0, R * 0.01);
+
+    ctx.save();
+    ctx.translate(0, 8);
+    ctx.fillStyle = '#b8262f';
+    roundRect(-30, -12, 60, 42, 4);
+    ctx.fill();
+    ctx.fillStyle = '#d13a43';
+    roundRect(-35, -26, 70, 17, 3);
+    ctx.fill();
+    ctx.fillStyle = '#e8b44f';
+    ctx.fillRect(-6, -26, 12, 56);
+    ctx.lineWidth = 5;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#e8b44f';
+    [-1, 1].forEach(function (side) {
+      ctx.beginPath();
+      ctx.moveTo(0, -27);
+      ctx.bezierCurveTo(side * 6, -44, side * 28, -46, side * 26, -34);
+      ctx.bezierCurveTo(side * 24, -26, side * 10, -27, 0, -27);
+      ctx.stroke();
+    });
+    ctx.beginPath();
+    ctx.arc(0, -27, 5.5, 0, TAU);
+    ctx.fillStyle = '#f3cf72';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
   }
 
   // ---------- sound (generated, no files) ----------
@@ -430,8 +538,7 @@
   function setMuted(m) {
     muted = m;
     store(STORAGE_MUTED, m ? '1' : null);
-    soundBtn.textContent = m ? '🔇' : '🔊';
-    soundBtn.title = t(m ? 'soundOff' : 'soundOn');
+    setIcon(soundBtn, m ? 'i-mute' : 'i-sound', t(m ? 'soundOff' : 'soundOn'));
   }
 
   // ---------- spinning ----------
@@ -508,20 +615,28 @@
   var pieces = [];
   var confettiRunning = false;
 
-  function confetti() {
+  var CONFETTI_COLORS = ['#b8262f', '#1d6646', '#e2b65a', '#fbf3e4', '#e86a5f', '#3fbf7f'];
+  var SNOW_COLORS = ['#ffffff', '#eef6ff', '#dceeff', '#bfe3ff'];
+
+  // snow: true for a flurry of snowflakes (game over) instead of paper confetti.
+  function confetti(snow) {
     if (reduceMotion) return;
     var dpr = window.devicePixelRatio || 1;
     confettiCanvas.width = window.innerWidth * dpr;
     confettiCanvas.height = window.innerHeight * dpr;
-    var colors = ['#c0392b', '#1e7a4f', '#f2c14e', '#f6efe2', '#e86a5f', '#3fbf7f'];
+    var colors = snow ? SNOW_COLORS : CONFETTI_COLORS;
     for (var i = 0; i < 180; i++) {
+      var round = snow || i % 5 === 0;
+      var w = (round ? 5 + Math.random() * 7 : 6 + Math.random() * 8) * dpr;
       pieces.push({
         x: Math.random() * confettiCanvas.width,
         y: -Math.random() * confettiCanvas.height * 0.5,
-        w: (6 + Math.random() * 8) * dpr,
-        h: (10 + Math.random() * 10) * dpr,
-        vx: (Math.random() - 0.5) * 3 * dpr,
-        vy: (2 + Math.random() * 4) * dpr,
+        w: w,
+        h: round ? w : (10 + Math.random() * 10) * dpr,
+        round: round,
+        vx: (Math.random() - 0.5) * (snow ? 1.5 : 3) * dpr,
+        vy: (snow ? 1 + Math.random() * 2 : 2 + Math.random() * 4) * dpr,
+        grav: snow ? 0.01 : 0.04,
         rot: Math.random() * TAU,
         vr: (Math.random() - 0.5) * 0.3,
         color: colors[i % colors.length]
@@ -537,13 +652,19 @@
     pieces.forEach(function (p) {
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.04;
+      p.vy += p.grav;
       p.rot += p.vr;
+      cctx.fillStyle = p.color;
+      if (p.round) {
+        cctx.beginPath();
+        cctx.arc(p.x, p.y, p.w / 2, 0, TAU);
+        cctx.fill();
+        return;
+      }
       cctx.save();
       cctx.translate(p.x, p.y);
       cctx.rotate(p.rot);
       cctx.scale(1, Math.cos(p.rot * 2)); // flutter
-      cctx.fillStyle = p.color;
       cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
       cctx.restore();
     });
@@ -703,8 +824,7 @@
     timerEl.classList.toggle('low', !timer.over && timerStarted() && left <= 60000);
     timerEl.classList.toggle('final', running && left <= 10000);
     document.body.classList.toggle('frozen', timer.over);
-    timerToggle.textContent = running ? '⏸' : '▶';
-    timerToggle.title = t(running ? 'timerPause' : 'timerStart');
+    setIcon(timerToggle, running ? 'i-pause' : 'i-play', t(running ? 'timerPause' : 'timerStart'));
     timerToggle.disabled = timer.over;
   }
 
@@ -773,7 +893,7 @@
   function showGameOver() {
     hideResult();
     gameoverEl.hidden = false;
-    confetti();
+    confetti(true);
   }
 
   function openTimerEditor() {
@@ -878,6 +998,18 @@
   setMuted(muted);
   setClean(load(STORAGE_CLEAN) === '1');
   resize();
+  // The wheel labels and clock are measured in the bundled fonts; redo both once they load.
+  if (document.fonts && document.fonts.load) {
+    Promise.all([
+      document.fonts.load('800 40px "Figtree"'),
+      document.fonts.load('700 40px "Fraunces"')
+    ]).then(function () {
+      labelCache = null;
+      draw();
+      fittedLength = 0;
+      fitTimerTime();
+    }, function () { /* keep the fallback fonts */ });
+  }
   if (timerRunning() && timeLeft() <= 0) endGame(true); // expired while the page was closed
   renderTimer();
   setInterval(tickTimer, 200);
