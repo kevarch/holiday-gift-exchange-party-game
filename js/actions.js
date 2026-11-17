@@ -25,5 +25,13 @@ window.DEFAULT_ACTIONS = [
   {
     title: 'Swap Two',
     details: 'Pick two people to trade gifts.'
+  },
+  {
+    title: 'Pass the Clicker',
+    details: 'Hand the clicker to anyone you choose.'
+  },
+  {
+    title: 'Lock It',
+    details: 'Put a bow on it. No one can steal or swap it.'
   }
 ];

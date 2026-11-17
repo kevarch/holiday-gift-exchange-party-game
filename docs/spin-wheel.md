@@ -18,6 +18,8 @@ Default actions (each is one wheel slice, all equally likely):
 | Unwrap Your Gift | Open your gift. It stays in play. Already open? Pick someone else to open theirs. |
 | Steal Any Gift | Trade your gift for any gift in the room. |
 | Swap Two | Pick two people to trade gifts. |
+| Pass the Clicker | Hand the clicker to anyone you choose. |
+| Lock It | Put a bow on it. No one can steal or swap it. |
 
 Wording rule: details speak directly to the player who spun ("you"), and stay as short as possible. Only say "everyone" when the action involves the whole circle.
 

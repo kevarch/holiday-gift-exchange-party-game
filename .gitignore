@@ -1,5 +1,51 @@
+# ---------- AI assistant instructions & local config ----------
+# Claude Code (patterns without a slash match in every folder)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.mcp.json
+# Other AI coding tools
+AGENTS.md
+GEMINI.md
+.cursor/
+.cursorrules
+.cursorignore
+.windsurf/
+.windsurfrules
+.github/copilot-instructions.md
+.github/instructions/
+.aider*
+.continue/
+.codeium/
+
+# ---------- OS files ----------
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---------- Editors ----------
+.vscode/
+.idea/
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# ---------- Temp, logs, scratch ----------
 *.log
+*.tmp
+*.temp
+*.bak
+*.orig
+tmp/
+temp/
+scratch/
+
+# ---------- Dependencies & secrets ----------
 node_modules/
 .env
-.claude/settings.local.json
+.env.*
