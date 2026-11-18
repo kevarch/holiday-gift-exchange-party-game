@@ -95,6 +95,18 @@ button { font-family: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .snow::before, .snow::after, .lights g { animation: none; }
 }
+/* While the game starts, the lights chase each other in time with the welcome jingle. */
+@media (prefers-reduced-motion: no-preference) {
+  .celebrate .lights g,
+  .celebrate .lights g:nth-of-type(2n),
+  .celebrate .lights g:nth-of-type(3n) { animation: chase .32s step-end infinite; animation-delay: 0s; }
+  .celebrate .lights g:nth-of-type(2n) { animation-delay: -.16s; }
+  .celebrate .lights { filter: brightness(1.15) saturate(1.1); }
+}
+@keyframes chase {
+  0% { opacity: .3; }
+  50% { opacity: 1; }
+}
 
 /* ---------- layout ---------- */
 /* No z-index here on purpose: #app must not form its own stacking layer, so the timer
@@ -110,6 +122,8 @@ button { font-family: inherit; }
 }
 
 .top {
+  position: relative;
+  z-index: 6; /* above the title slide's gift and the wheel as they move in when the game starts */
   display: flex;
   align-items: center;
   gap: clamp(10px, 2vh, 22px);
@@ -136,9 +150,10 @@ button { font-family: inherit; }
 }
 
 /* ---------- game timer ---------- */
-/* Layers, bottom to top: scenery 0, page, result/game-over cards 10, confetti 15,
-   editors 20, timer 30. The timer is the top-most item so the room can always see
-   the clock, even while a card or editor is open (wide screens only; see below). */
+/* Layers, bottom to top: scenery 0, page, title slide 5, game title and H tip 6, result/
+   game-over/how-to-play cards 10, confetti 15, editors 20, timer 30. The timer is the top-most
+   item so the room can always see the clock, even while a card or editor is open
+   (wide screens only; see below). */
 .timer {
   position: fixed;
   top: clamp(12px, 3vh, 32px);
@@ -371,6 +386,186 @@ kbd {
 .version:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }
 .version[hidden] { display: none; }
 
+/* ---------- title slide ---------- */
+/* Shown on load until the game starts. It lies over the game screen (same scenery), whose
+   clock, wheel and key hints stay hidden but laid out, so the start can animate into them.
+   The title is the game's own heading, scaled up into .splash-slot by app.js. */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: max(56px, 7.4vh) 16px clamp(12px, 2.6vh, 28px);
+  pointer-events: none; /* only its buttons take clicks, so the corner buttons stay usable */
+}
+.splash[hidden] { display: none; }
+.splash button { pointer-events: auto; }
+.splash-on .timer, .splash-on .stage, .splash-on #hint { visibility: hidden; }
+.splash-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 3vh;
+}
+.splash-gift {
+  position: relative;
+  flex: none;
+  width: clamp(100px, 24vh, 260px);
+  height: clamp(100px, 24vh, 260px);
+  margin-bottom: 1vh;
+}
+.splash-gift::before {
+  content: '';
+  position: absolute;
+  inset: -8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(243, 207, 114, .3) 0, rgba(243, 207, 114, 0) 66%);
+}
+.splash-gift::after { /* shadow on the "floor" under the gift */
+  content: '';
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 91%;
+  height: 6%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .35);
+}
+.gift-box {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+}
+.gift-spark { position: absolute; z-index: 1; color: var(--gold); }
+.gift-spark.s1 { width: 10%; height: 10%; left: 2%; top: 20%; }
+.gift-spark.s2 { width: 7%; height: 7%; right: 5%; top: 8%; color: #FFF2D6; }
+.gift-spark.s3 { width: 6%; height: 6%; right: 1%; top: 58%; }
+@media (prefers-reduced-motion: no-preference) {
+  .gift-box { animation: bob 3.2s ease-in-out infinite; }
+  .gift-spark { animation: sparkle 2.4s ease-in-out infinite; }
+  .gift-spark.s2 { animation-delay: -.8s; }
+  .gift-spark.s3 { animation-delay: -1.6s; }
+}
+@keyframes bob { 50% { transform: translateY(-3.5%); } }
+@keyframes sparkle {
+  0%, 100% { opacity: .25; transform: scale(.65); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.splash-slot { flex: none; }
+.splash-sub {
+  margin: 1.4vh 0 0;
+  font-size: clamp(17px, 3.5vh, 38px);
+  font-weight: 500;
+  letter-spacing: .01em;
+  text-align: center;
+  color: var(--mist);
+}
+.splash-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(12px, 2.6vh, 28px);
+  margin-top: clamp(20px, 5vh, 54px);
+}
+.splash-hint { flex: none; }
+
+/* Game length: top left, where the clock appears once the game starts. Hidden with H. */
+.game-length {
+  position: fixed;
+  top: clamp(12px, 3vh, 32px);
+  left: clamp(12px, 3vh, 32px);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: clamp(42px, 4.8vh, 52px);
+  padding: 0 16px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--cream);
+  font-family: var(--ui);
+  cursor: pointer;
+  opacity: .75;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
+  transition: opacity .3s, border-color .15s, background-color .15s;
+}
+.game-length:hover, .game-length:focus-visible { opacity: 1; border-color: var(--gold); background: var(--panel-raised); }
+.game-length:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gl-icon { width: 20px; height: 20px; flex: none; color: var(--brass); }
+.gl-label { font-size: 14px; font-weight: 600; color: var(--mist); }
+.gl-value { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.gl-edit { width: 16px; height: 16px; flex: none; color: var(--mist); }
+.clean .game-length { display: none; }
+
+/* Pressing Start: the buttons and subtitle drop away while the title and gift move into the game. */
+.splash-sub, .splash-buttons, .splash-hint, .splash-gift::before, .splash-gift::after, .gift-spark {
+  transition: opacity .3s ease, transform .3s ease;
+}
+.splash.leaving button { pointer-events: none; }
+.splash.leaving .splash-sub,
+.splash.leaving .splash-buttons,
+.splash.leaving .splash-hint { opacity: 0; transform: translateY(1em); }
+.splash.leaving .game-length,
+.splash.leaving .splash-gift::before,
+.splash.leaving .splash-gift::after { opacity: 0; }
+.splash.leaving .gift-spark { animation: none; opacity: 0; }
+
+/* Big buttons: Start (cranberry with a gold ring) and How to play. */
+.big-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55em;
+  height: 2.7em;
+  padding: 0 1.4em;
+  border-radius: .8em;
+  font: 800 clamp(18px, 3.1vh, 34px)/1 var(--ui);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s, background-color .15s, border-color .15s;
+}
+.big-btn[hidden] { display: none; }
+.big-btn svg { width: .95em; height: .95em; flex: none; }
+.big-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+.big-btn.start {
+  border: 2px solid var(--gold);
+  background: var(--cranberry);
+  color: var(--cream);
+  box-shadow: inset 0 0 0 4px var(--cranberry), inset 0 0 0 5px rgba(243, 207, 114, .45), 0 12px 30px rgba(184, 38, 47, .35), 0 0 40px rgba(243, 207, 114, .15);
+}
+.big-btn.start svg { color: var(--gold); }
+.big-btn.start:hover {
+  background: #C9303A;
+  box-shadow: inset 0 0 0 4px #C9303A, inset 0 0 0 5px rgba(243, 207, 114, .6), 0 14px 34px rgba(184, 38, 47, .45), 0 0 56px rgba(243, 207, 114, .3);
+  transform: translateY(-2px);
+}
+.big-btn.soft {
+  border: 1.5px solid rgba(226, 182, 90, .5);
+  background: rgba(17, 40, 29, .85);
+  color: var(--cream);
+  font-weight: 700;
+}
+.big-btn.soft svg { color: var(--brass); }
+.big-btn.soft:hover { border-color: var(--gold); background: var(--panel-raised); transform: translateY(-2px); }
+.big-btn.small { font-size: clamp(15px, 2.6vh, 28px); height: 2.5em; padding: 0 1.2em; border-radius: .7em; }
+.big-btn.ink {
+  border: 1.5px solid rgba(42, 20, 12, .28);
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+}
+.big-btn.ink svg { color: var(--ribbon); }
+.big-btn.ink:hover { border-color: var(--ribbon); background: rgba(142, 26, 34, .06); }
+.big-btn.ink:focus-visible { outline-color: var(--ribbon); }
+
 /* ---------- result and game-over cards ---------- */
 .result {
   position: fixed;
@@ -525,6 +720,70 @@ kbd {
 @keyframes pop {
   from { transform: scale(.6); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+/* How to play: the same gift tag, with a holly sprig on top and numbered steps. */
+.rules-card {
+  width: min(1100px, 92vw);
+  padding: clamp(48px, 8vh, 88px) clamp(24px, 6vw, 100px) clamp(24px, 4.4vh, 48px);
+  text-align: left;
+}
+.rules-card .rules-holly {
+  position: absolute;
+  --h: clamp(84px, 15vh, 170px);
+  width: var(--h);
+  height: calc(var(--h) * 64 / 66);
+  top: calc(var(--h) * -.78);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  transform: rotate(90deg); /* leaves up, berries resting on the card's edge */
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .3));
+}
+.rules-steps {
+  list-style: none;
+  margin: clamp(14px, 3.4vh, 36px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .62em;
+  font-size: clamp(18px, 3.9vh, 42px);
+  line-height: 1.3;
+  font-weight: 500;
+  color: #3A2A1C;
+}
+.rules-steps li { display: flex; align-items: flex-start; gap: .7em; }
+.step-num {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  margin-top: -.08em;
+  border-radius: 50%;
+  background: var(--pine);
+  box-shadow: 0 0 0 2px var(--brass);
+  font: 700 .9em/1 var(--display);
+  color: var(--gold);
+}
+.step-text strong { font-weight: 800; color: var(--pine); }
+.rules-actions { display: flex; flex-wrap: wrap; gap: .32em; margin-top: .4em; }
+.rules-chip {
+  padding: .2em .65em;
+  border-radius: .5em;
+  background: #F1DFB8;
+  color: #5A3A0E;
+  font-size: .58em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.rules-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: clamp(18px, 4.2vh, 46px);
 }
 
 /* ---------- editors ---------- */

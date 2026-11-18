@@ -2,6 +2,8 @@
 
 The main screen of the gift exchange. Players sit in a circle with their gifts and watch one shared screen (TV or projector). The host presses the clicker's **Next** button to spin a wheel; wherever it stops is what everyone does next.
 
+The game opens on a title slide with a How to play card; starting the game animates into this screen. See [title-slide.md](title-slide.md).
+
 ## Actions
 
 Each action has two parts:
@@ -42,7 +44,10 @@ At least one action is required, and every action needs a title. Any number work
 | `E` | Edit actions |
 | `M` | Mute / unmute sound |
 | `H` | Hide / show controls (clean display for the audience) |
+| `I` | Open / close How to play (also the **?** corner button) |
 | Mouse click on the wheel | Spin |
+
+While How to play is open, Next and Back just close it.
 
 **Clean display:** `H` hides the key hints, the corner buttons, the timer buttons and the version number, leaving the title, clock and wheel. A faint `H` tip stays in the bottom-right corner; click it or press `H` to bring the controls back. Going fullscreen turns it on; the setting is remembered across reloads.
 

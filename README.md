@@ -8,6 +8,7 @@ It runs entirely in your web browser from a single folder: no install, no accoun
 
 ## Features
 
+- **Title slide and How to play card** to welcome guests and explain the rules, then one press to start: a welcome jingle plays as the wheel spins into place
 - **Big, readable wheel** designed for a shared screen across the room
 - **Holiday look**: a brass-rimmed wheel with marquee lights, a string of colored lights, gently falling snow, and gift-tag result cards
 - **Presentation clicker support**: spin with the Next button, dismiss with Back
@@ -21,7 +22,7 @@ It runs entirely in your web browser from a single folder: no install, no accoun
 
 1. Download this repository (on GitHub: **Code → Download ZIP**) and unzip it, or clone it with Git.
 2. Open `index.html` in a web browser: double-click it, or drag it onto a browser window.
-3. Press <kbd>F</kbd> for fullscreen, <kbd>T</kbd> to start the clock, and <kbd>Space</kbd> (or the clicker's Next button) to spin.
+3. The title slide appears. Set the game length (top-left button) if you like, press ◀ (or <kbd>I</kbd>) to show everyone **How to play**, then press <kbd>Space</kbd> or the clicker's Next button to start. The clock starts, and from then on Next spins the wheel. Press <kbd>F</kbd> any time for fullscreen.
 
 That's it. Nothing to install, and it works offline.
 
@@ -35,9 +36,9 @@ That's it. Nothing to install, and it works offline.
 ## How to play
 
 1. Everyone sits in a circle with their wrapped gift.
-2. Set the game length (default 30 minutes) and start the timer.
-3. Spin the wheel. A card pops up with the action and a short explanation. Everyone does it.
-4. Spin again. Keep going until time runs out.
+2. On the title slide, set the game length (default 30 minutes), show the **How to play** card, and press **Start the game**.
+3. Take turns spinning the wheel, going clockwise around the circle. A card pops up with the action and a short explanation. Do what it says.
+4. Keep going until time runs out.
 5. When the clock hits zero, a **Game Over** card appears and the wheel freezes. Everyone keeps the gift they're holding.
 
 ### Default wheel actions
@@ -69,6 +70,9 @@ Each slice is equally likely.
 | <kbd>H</kbd> | Hide / show controls for a clean audience display |
 | <kbd>E</kbd> | Edit the wheel actions |
 | <kbd>M</kbd> | Mute / unmute |
+| <kbd>I</kbd> | Show / hide How to play (also the **?** button in the top-right corner) |
+
+On the title slide, Next starts the game and Back opens How to play.
 
 Presses during a spin are ignored, so a bumped clicker can't double-spin.
 
@@ -122,7 +126,8 @@ js/strings.js       All on-screen wording
 js/app.js           Wheel, timer, controls, and editors
 js/version.js       App version number
 assets/fonts/       Bundled fonts (Fraunces, Figtree) and their licenses
-docs/spin-wheel.md  Full behavior spec
+docs/spin-wheel.md  Full behavior spec for the wheel, timer, and controls
+docs/title-slide.md Title slide, How to play card, and the start of the game
 CHANGELOG.md        What changed in each version
 LICENSE             MIT License
 ```

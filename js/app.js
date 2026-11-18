@@ -86,6 +86,7 @@
   var rotation = 0;
   var spinning = false;
   var winner = -1;
+  var introSpin = false; // the wheel is spinning into place as the game starts
   var editorOpen = false;
   var muted = load(STORAGE_MUTED) === '1';
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -197,6 +198,7 @@
     canvas.height = Math.round(size * dpr);
     wheelWrap.style.marginTop = Math.round(size * 0.036) + 'px';
     draw();
+    layoutSplash();
   }
 
   function slicePath(start, end) {
@@ -315,7 +317,7 @@
     }
 
     // Marquee lights on the rim. They turn with the wheel and chase while it spins.
-    var chase = spinning ? Math.floor(performance.now() / 110) % 2 : -1;
+    var chase = spinning || introSpin ? Math.floor(performance.now() / 110) % 2 : -1;
     for (var b = 0; b < 24; b++) {
       var ba = rotation + (b / 24) * TAU;
       var bx = Math.cos(ba) * WHEEL.bulbs;
@@ -538,6 +540,49 @@
     if (a) finale(a, a.destination);
   }
 
+  // ---------- welcome jingle ----------
+  // Plays as the game starts: a cheerful, rising bell tune over sleigh bells and an oom-pah
+  // bass (C – F – G7 – C), landing on a bright ringing chord just as the wheel settles.
+  var WELCOME_STEP = 0.115; // seconds per eighth note
+  var WELCOME_TUNE = [
+    [0, 72, 1], [1, 76, 1], [2, 79, 1], [3, 84, 1],   // C E G C
+    [4, 81, 2], [6, 84, 1], [7, 89, 1],               // A– C F
+    [8, 88, 1], [9, 86, 1], [10, 83, 1], [11, 86, 1], // E D B D
+    [12, 88, 2], [14, 91, 2],                         // E– G–
+    [16, 96, 12]                                      // high C, left to ring
+  ];
+  var WELCOME_BARS = [
+    [48, [64, 67, 72]], // C
+    [41, [65, 69, 72]], // F
+    [43, [65, 67, 71]], // G7
+    [48, [64, 67, 72]]  // C
+  ];
+
+  function welcome(a, out) {
+    var s = WELCOME_STEP;
+    var t = a.currentTime + 0.05;
+    var land = t + 16 * s; // where the final chord lands
+    WELCOME_TUNE.forEach(function (n) {
+      bell(a, out, hz(n[1]), t + n[0] * s, n[2] * s + 0.3, n[0] === 16 ? 0.13 : 0.19);
+    });
+    WELCOME_BARS.forEach(function (bar, i) {
+      var b = t + i * 4 * s;
+      voice(a, out, 'triangle', hz(bar[0]), b, 0.22, 0.2);
+      bar[1].forEach(function (m) { voice(a, out, 'triangle', hz(m), b + 2 * s, 0.12, 0.05); });
+    });
+    for (var i = 0; i < 16; i++) jingle(a, out, t + i * s, i % 2 ? 0.07 : 0.13);
+    // The landing: a ringing C chord, a twinkle running up over it, and a last sleigh-bell shake.
+    [72, 76, 79, 84].forEach(function (m) { bell(a, out, hz(m), land, 2.2, 0.08); });
+    [48, 36].forEach(function (m) { voice(a, out, 'triangle', hz(m), land, 1.2, 0.18); });
+    [91, 96, 100, 103].forEach(function (m, k) { bell(a, out, hz(m), land + (k + 1) * 0.07, 0.8, 0.05); });
+    for (var k = 0; k < 8; k++) jingle(a, out, land + k * 0.045, 0.16 * Math.pow(0.72, k));
+  }
+
+  function playWelcome() {
+    var a = audioCtx();
+    if (a) welcome(a, a.destination);
+  }
+
   function setMuted(m) {
     muted = m;
     store(STORAGE_MUTED, m ? '1' : null);
@@ -546,7 +591,7 @@
 
   // ---------- spinning ----------
   function spin() {
-    if (spinning || modalOpen() || !actions.length) return;
+    if (spinning || splashOpen || rulesOpen || modalOpen() || !actions.length) return;
     if (timer.over) { showGameOver(); return; }
     hideResult();
     audioCtx(); // unlock audio on this user gesture
@@ -677,7 +722,7 @@
 
   // ---------- editor ----------
   function openEditor() {
-    if (spinning) return;
+    if (spinning || starting) return;
     dismiss();
     editorOpen = true;
     editorText.value = serialize(actions);
@@ -728,6 +773,7 @@
     labelCache = null;
     draw();
     closeEditor();
+    if (rulesOpen) renderRules();
   });
 
   document.getElementById('editor-reset').addEventListener('click', function () {
@@ -829,6 +875,7 @@
     document.body.classList.toggle('frozen', timer.over);
     setIcon(timerToggle, running ? 'i-pause' : 'i-play', t(running ? 'timerPause' : 'timerStart'));
     timerToggle.disabled = timer.over;
+    if (splashOpen) splashLengthValue.textContent = t('splashLengthValue', { minutes: timer.minutes });
   }
 
   function tickTimer() {
@@ -874,6 +921,7 @@
     saveTimer();
     gameoverEl.hidden = true;
     renderTimer();
+    if (rulesOpen) renderRules(); // the minutes appear in step 4
   }
 
   // quiet: true when restoring a timer that ran out while the page was closed.
@@ -900,7 +948,7 @@
   }
 
   function openTimerEditor() {
-    if (spinning || modalOpen()) return;
+    if (spinning || starting || modalOpen()) return;
     timerEditorOpen = true;
     timerMinutes.value = timer.minutes;
     timerError.textContent = '';
@@ -941,6 +989,204 @@
   });
   gameoverEl.addEventListener('click', function () { gameoverEl.hidden = true; });
 
+  // ---------- title slide ----------
+  // Shown on load while no game is under way. It sits over the game screen (same scenery),
+  // whose clock, wheel and key hints are hidden but still laid out. The big title is the
+  // game's own heading, moved and scaled into the slide's empty slot, so when the game
+  // starts it can simply glide back into place.
+  var splashEl = document.getElementById('splash');
+  var splashSlot = document.getElementById('splash-slot');
+  var splashGift = document.getElementById('splash-gift');
+  var splashLengthValue = document.getElementById('splash-length-value');
+  var headerEl = document.querySelector('.top');
+  var hintEl = document.getElementById('hint');
+  var splashOpen = false;
+  var starting = false;     // Start was pressed; the game is on its way in
+  var introPlaying = false; // the start animation is running
+  var headerSplashTransform = '';
+
+  function showSplash() {
+    splashOpen = true;
+    document.body.classList.add('splash-on');
+    splashEl.hidden = false;
+  }
+
+  function layoutSplash() {
+    if (!splashOpen || introPlaying) return;
+    headerEl.style.transform = 'none';
+    var hr = headerEl.getBoundingClientRect();
+    if (!hr.width) return;
+    var scale = Math.min(1.7, window.innerWidth * 0.92 / hr.width, window.innerHeight * 0.2 / hr.height);
+    splashSlot.style.width = Math.round(hr.width * scale) + 'px';
+    splashSlot.style.height = Math.round(hr.height * scale) + 'px';
+    var sr = splashSlot.getBoundingClientRect();
+    var dx = sr.left + sr.width / 2 - (hr.left + hr.width / 2);
+    var dy = sr.top + sr.height / 2 - (hr.top + hr.height / 2);
+    headerSplashTransform = 'translate(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px) scale(' + scale.toFixed(4) + ')';
+    headerEl.style.transform = headerSplashTransform;
+  }
+
+  // One press does it all: the welcome jingle, the move into the game, and the clock.
+  // (It leaves fullscreen to the host: press F before or after.)
+  function startGame() {
+    if (!splashOpen || starting || modalOpen()) return;
+    starting = true;
+    closeRules();
+    audioCtx(); // unlock audio on this user gesture
+    splashEl.classList.add('leaving'); // buttons and subtitle drop away right away
+    runIntro();
+  }
+
+  function anim(el, frames, opts) {
+    return el && el.animate ? el.animate(frames, opts) : null;
+  }
+
+  function translateY(el) {
+    var m = /matrix\(([^)]+)\)/.exec(getComputedStyle(el).transform || '');
+    return m ? parseFloat(m[1].split(',')[5]) || 0 : 0;
+  }
+
+  // About 2 seconds, timed to the welcome jingle: the title glides up into the header, the
+  // gift shrinks into the wheel's hub as the wheel spins in around it, then the pointer and
+  // clock arrive. The game screen's pieces start hidden by their animations (fill: backwards)
+  // and are left with their normal styles when the animations end.
+  function runIntro() {
+    resize(); // measure the current layout (this re-lays out the title slide too)
+    introPlaying = true;
+    var headerFrom = headerSplashTransform;
+    var giftFrom = getComputedStyle(splashGift).transform; // somewhere mid-bob
+    var giftRect = splashGift.getBoundingClientRect();
+    var wheelRect = canvas.getBoundingClientRect();
+    // The gift symbol is drawn in the wheel's own units (92 of the wheel's 800), centered on the hub.
+    var gs = (92 * wheelRect.width / 800) / giftRect.width;
+    var gx = wheelRect.left + wheelRect.width / 2 - (giftRect.left + giftRect.width / 2);
+    var gy = wheelRect.top + wheelRect.height / 2 - (giftRect.top + giftRect.height / 2 - translateY(splashGift));
+    var giftTo = 'translate(' + gx.toFixed(1) + 'px, ' + gy.toFixed(1) + 'px) scale(' + gs.toFixed(4) + ')';
+
+    document.body.classList.remove('splash-on');
+    document.body.classList.add('celebrate');
+    headerEl.style.transform = '';
+    splashGift.style.animation = 'none'; // the animation below takes over from mid-bob
+    playWelcome();
+
+    if (reduceMotion) {
+      // A plain cross-fade.
+      anim(headerEl, [
+        { transform: headerFrom, opacity: 1 },
+        { transform: headerFrom, opacity: 0, offset: 0.4 },
+        { transform: 'none', opacity: 0, offset: 0.5 },
+        { transform: 'none', opacity: 1 }
+      ], { duration: 800, fill: 'backwards' });
+      anim(splashGift, [{ opacity: 1 }, { opacity: 0 }], { duration: 350, fill: 'forwards' });
+      [wheelWrap, timerEl, hintEl].forEach(function (el) {
+        anim(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 450, delay: 350, fill: 'backwards' });
+      });
+      setTimeout(finishIntro, 900);
+      return;
+    }
+
+    anim(headerEl, [{ transform: headerFrom }, { transform: 'none' }],
+      { duration: 1000, delay: 120, easing: 'cubic-bezier(.65, 0, .35, 1)', fill: 'backwards' });
+    anim(splashGift, [{ transform: giftFrom }, { transform: giftTo }],
+      { duration: 1350, delay: 250, easing: 'cubic-bezier(.5, 0, .2, 1)', fill: 'forwards' });
+    anim(splashGift, [{ opacity: 1 }, { opacity: 0 }], { duration: 250, delay: 1620, fill: 'forwards' });
+    anim(wheelWrap, [
+      { transform: 'scale(.3)', opacity: 0 },
+      { opacity: 0.85, offset: 0.5 },
+      { transform: 'scale(1)', opacity: 1 }
+    ], { duration: 1350, delay: 250, easing: 'cubic-bezier(.2, .7, .2, 1)', fill: 'backwards' });
+    spinIn(1350, 250);
+    anim(pointerEl, [{ transform: 'translateY(-90%)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+      { duration: 450, delay: 1350, easing: 'cubic-bezier(.3, 1.6, .5, 1)', fill: 'backwards' });
+    anim(timerEl, [{ transform: 'translateX(-130%)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+      { duration: 650, delay: 1200, easing: 'cubic-bezier(.2, 1.25, .4, 1)', fill: 'backwards' });
+    anim(hintEl, [{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: 1500, fill: 'backwards' });
+    setTimeout(finishIntro, 1900);
+  }
+
+  // Turn the wheel into place (one and a quarter turns, easing out), lights chasing.
+  function spinIn(duration, delay) {
+    var end = rotation;
+    var start = end - 1.25 * TAU;
+    var t0 = performance.now() + delay;
+    introSpin = true;
+    rotation = start;
+    draw();
+    function frame(now) {
+      var p = Math.max(0, Math.min(1, (now - t0) / duration));
+      rotation = start + (end - start) * (1 - Math.pow(1 - p, 3));
+      draw();
+      if (p < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        rotation = end;
+        introSpin = false;
+        draw();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // The landing: confetti on the jingle's final chord, and the clock starts.
+  function finishIntro() {
+    splashOpen = false;
+    starting = false;
+    introPlaying = false;
+    splashEl.hidden = true;
+    splashEl.classList.remove('leaving');
+    if (splashGift.getAnimations) splashGift.getAnimations().forEach(function (a) { a.cancel(); });
+    splashGift.style.animation = '';
+    confetti();
+    startTimer();
+    setTimeout(function () { document.body.classList.remove('celebrate'); }, 800);
+  }
+
+  // ---------- How to play ----------
+  var rulesEl = document.getElementById('rules');
+  var rulesActions = document.getElementById('rules-actions');
+  var rulesStep4 = document.getElementById('rules-step4');
+  var rulesStart = document.getElementById('rules-start');
+  var rulesOpen = false;
+
+  // Step 3 lists the wheel's current actions; step 4 has the game length.
+  function renderRules() {
+    rulesActions.textContent = '';
+    actions.forEach(function (a) {
+      var chip = document.createElement('span');
+      chip.className = 'rules-chip';
+      chip.textContent = a.title;
+      rulesActions.appendChild(chip);
+    });
+    rulesStep4.innerHTML = t('rulesStep4', { minutes: timer.minutes });
+  }
+
+  function openRules() {
+    if (rulesOpen || spinning || starting || modalOpen()) return;
+    dismiss();
+    renderRules();
+    rulesStart.hidden = !splashOpen; // during the game the card only closes
+    rulesEl.hidden = false;
+    rulesOpen = true;
+  }
+
+  function closeRules() {
+    rulesOpen = false;
+    rulesEl.hidden = true;
+  }
+
+  function toggleRules() {
+    if (rulesOpen) closeRules();
+    else openRules();
+  }
+
+  onButton('splash-start', startGame);
+  onButton('splash-rules', openRules);
+  onButton('splash-length', openTimerEditor);
+  onButton('rules-btn', toggleRules);
+  onButton('rules-close', closeRules);
+  onButton('rules-start', startGame);
+  rulesEl.addEventListener('mousedown', function (e) { if (e.target === rulesEl) closeRules(); });
+
   // ---------- clean display (hide controls) ----------
   var uiToggleLabel = document.getElementById('ui-toggle-label');
   function setClean(on) {
@@ -960,11 +1206,34 @@
       return; // let typing through
     }
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    var next = NEXT_KEYS.indexOf(e.key) !== -1;
+    var back = BACK_KEYS.indexOf(e.key) !== -1;
 
-    if (NEXT_KEYS.indexOf(e.key) !== -1) {
+    // While the game is on its way in, only sound and the controls toggle work.
+    if (starting && key !== 'm' && key !== 'h') {
+      if (next || back) e.preventDefault();
+      return;
+    }
+    if (rulesOpen) {
+      // Next starts the game from the title slide; otherwise it just closes the card.
+      if (next) { e.preventDefault(); if (!e.repeat) { if (splashOpen) startGame(); else closeRules(); } return; }
+      if (back || key === 'i') { e.preventDefault(); if (!e.repeat) closeRules(); return; }
+      if (key === 't' || key === 'r') { e.preventDefault(); return; }
+    } else if (splashOpen) {
+      if (next || key === 't') { e.preventDefault(); if (!e.repeat) startGame(); return; }
+      if ((back && e.key !== 'Escape') || key === 'i') { e.preventDefault(); if (!e.repeat) openRules(); return; }
+      if (key === 'r' || e.key === 'Escape') return;
+    } else if (key === 'i') {
+      e.preventDefault();
+      if (!e.repeat) openRules();
+      return;
+    }
+
+    if (next) {
       e.preventDefault();
       if (!e.repeat) spin();
-    } else if (BACK_KEYS.indexOf(e.key) !== -1) {
+    } else if (back) {
       e.preventDefault();
       if (!e.repeat) dismiss();
     } else if (e.key === 'f' || e.key === 'F') {
@@ -1002,6 +1271,8 @@
 
   setMuted(muted);
   setClean(load(STORAGE_CLEAN) === '1');
+  if (timerRunning() && timeLeft() <= 0) endGame(true); // expired while the page was closed
+  if (!timer.over && !timerStarted()) showSplash(); // no game under way: start on the title slide
   resize();
   // The wheel labels and clock are measured in the bundled fonts; redo both once they load.
   if (document.fonts && document.fonts.load) {
@@ -1013,9 +1284,9 @@
       draw();
       fittedLength = 0;
       fitTimerTime();
+      layoutSplash(); // the title's size changes with the font
     }, function () { /* keep the fallback fonts */ });
   }
-  if (timerRunning() && timeLeft() <= 0) endGame(true); // expired while the page was closed
   renderTimer();
   setInterval(tickTimer, 200);
 })();

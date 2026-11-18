@@ -19,8 +19,27 @@ window.TEXT = {
   hintReset: 'Reset timer',
   hintEdit: 'Edit actions',
   hintSound: 'Sound',
+  hintRules: 'How to play',
+  hintStart: 'Start',                      // title slide only
+
+  // ---------- title slide (shown before the game starts) ----------
+  splashSubtitle: 'Grab a gift and find a seat',
+  startButton: 'Start the game',           // also on the How to play card
+  rulesButton: 'How to play',
+  splashLengthLabel: 'Game length',        // button in the top-left corner
+  splashLengthValue: '{minutes} min',
+
+  // ---------- How to play card ----------
+  rulesTitle: 'How to play',               // gold stars are added on each side
+  // (HTML) Steps 1 to 4. Step 3 is followed by the list of wheel actions.
+  rulesStep1: '<strong>Sit in a circle,</strong> each holding one wrapped gift.',
+  rulesStep2: '<strong>Take turns spinning the wheel,</strong> going clockwise around the circle.',
+  rulesStep3: '<strong>Do what the wheel says.</strong>',
+  rulesStep4: '<strong>When the {minutes}-minute clock runs out,</strong> gifts freeze. The one you\'re holding is yours!',
+  rulesClose: 'Close',
 
   // ---------- corner buttons (hover tooltips) ----------
+  rulesButtonTip: 'How to play (I)',
   soundOn: 'Sound on (M)',
   soundOff: 'Sound off (M)',
   editActionsButton: 'Edit actions (E)',
